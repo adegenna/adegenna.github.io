@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
-<title>Anthony M. DeGennaro</title>
-<meta name="description" content="Homepage of Anthony M. DeGennaro">
-<meta name="keywords" content="Anthony DeGennaro, uncertainty quantification, machine learning">
+<title>Writing | Anthony M. DeGennaro</title>
+<meta name="description" content="Writing">
+<meta name="keywords" content="art, paintings">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/lib/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
@@ -12,16 +12,11 @@
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
 .fa-anchor,.fa-coffee {font-size:200px}
-header {
-  background-image: url("images/painting_landscape_crop.jpg");
-  background-size: 806px 403px;
-  max-width: 806px;
-  height: 403px;
-  margin: auto; 
-}
 darkblue {
   background-color: #204e87;
 }
+img {margin-bottom: -7px}
+.w3-row-padding img {margin-bottom: 12px}
 </style>
 <body>
 
@@ -31,7 +26,7 @@ darkblue {
     <li class="w3-hide-medium w3-hide-large w3-opennav w3-right">
       <a class="w3-padding-large w3-hover-white w3-large w3-black" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     </li>
-    <li><a href="#" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
+    <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
     <li class="w3-hide-small"><a href="research.html" class="w3-padding-large w3-hover-white">Research</a></li>
     <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Artwork</a></li>
     <li class="w3-hide-small"><a href="writing.html" class="w3-padding-large w3-hover-white">Writing</a></li>
@@ -47,24 +42,20 @@ darkblue {
   </div>
 </div>
 
-<header class="w3-container w3-black w3-left-align w3-padding-128">
-</header>
-
-<!-- First Grid -->
+<!-- !PAGE CONTENT! -->
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <div class="w3-twothird">
-      <h5 class="w3-padding-32">Welcome! I'm <a href="https://www.bnl.gov/staff/adegennaro">Anthony</a>, a computational scientist and engineer at Brookhaven National Laboratory. I specialize in uncertainty quantification, machine learning, and scientific computing. My <a href="research.html">research</a> centers around developing and applying these methods to physical systems and experimental data.
-      <p>
-      I have lots of other interests: <a href="writing.html">writing</a>, <a href="art.html">painting and photography</a>, playing guitar, and recreational coding for math and physics-based programs.</h5>
-      <h4>Contact</h4>
-      <h5>amdegennaro at gmail</h5>
-    </div>
-    <div class="w3-third w3-center">
-      <img src="images/headshot_2.jpg" style="width:97%"/>
-    </div>
+    <h1>Fiction and poetry</h1>
+    <h3><a href="https://thedillydounreview.com/issue-14/anthony-m-degennaro/">"The Pier"</a></h3>
+    I wrote this to explore the idea of belonging, and how self-contradictory it can be. I think we can find ourselves fully in a place, fully out of it, and somewhere in between, all at the same time.
+    <h3><a href="https://vitabrevisliterature.com/2020/09/27/gray-skies-poetry-by-anthony-m-degennaro/">"Gray Skies"</a></h3>
+    I've always loved the idea that aesthetics is as much a product of the observer as it is of the creator. I try to capture that in this poem.
   </div>
 </div>
+
+<!-- End Page Content -->
+</div>
+
 
 <!-- Footer -->
 <footer class="w3-container w3-padding-64 w3-center w3-opacity">  
@@ -82,6 +73,16 @@ function myFunction() {
         x.className += " w3-show";
     } else { 
         x.className = x.className.replace(" w3-show", "");
+    }
+}
+
+// Toggle grid padding
+function toggleGridPadding() {
+    var x = document.getElementById("myGrid");
+    if (x.className === "w3-row") {
+        x.className = "w3-row-padding";
+    } else { 
+        x.className = x.className.replace("w3-row-padding", "w3-row");
     }
 }
 </script>
