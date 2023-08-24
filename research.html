@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<title>Research | Anthony M. DeGennaro</title>
+<meta name="description" content="Research">
+<meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
+.fa-coffee {font-size:200px}
+header {
+  background-image: url("images/research.png");
+  background-size: 871px 256px;
+  max-width: 871px;
+  margin: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: None;
+  margin-top: -22px;
+  font-family: "Lato", sans-serif;
+}
+/*tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+th {
+    background-color: #204e87;
+    color: white;
+}
+    */
+</style>
+<body>
+
+<!--  border: 1px solid black; -->
+<!-- Navbar -->
+<div class="w3-top">
+  <ul class="w3-navbar w3-black w3-card-2 w3-left-align w3-large">
+    <li class="w3-hide-medium w3-hide-large w3-opennav w3-right">
+      <a class="w3-padding-large w3-hover-white w3-large w3-black" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    </li>
+    <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
+    <li class="w3-hide-small"><a href="#" class="w3-padding-large w3-hover-white">Research</a></li>
+    <li class="w3-hide-small"><a href="programs.html" class="w3-padding-large w3-hover-white">Programming projects</a></li>
+    <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Artwork</a></li>
+  </ul>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-hide w3-hide-large w3-hide-medium">
+    <ul class="w3-navbar w3-left-align w3-large w3-black">
+      <li><a class="w3-padding-large" href="#">Research</a></li>
+      <li><a class="w3-padding-large" href="programs.html">Programming projects</a></li>
+      <li><a class="w3-padding-large" href="art.html">Artwork</a></li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Research</h1>
+      <h5>My research centers on uncertainty quantification, machine learning, and scientific computing. During my postdoc, I developed a new method for choosing the basis functions for Dynamic Mode Decomposition (a reduced-order modeling technique). I also worked on model structural inference and uncertainty quantification for dynamical systems. At Brookhaven, I focus on applying methods from machine learning and uncertainty quantification to the design of optimal experiments and to the automation of data processing. I led a project on using encoder-decoder neural networks to automatically denoise data from X-Ray Photon Correlation spectroscopy (XPCS) data. I am currently working on applying Bayesian inference to calibrate computational models in materials science to data.</h5>
+      <h5>You may find a list of my publications on my <a href="https://scholar.google.com/citations?user=B1BcT2cAAAAJ&hl=en">Google scholar page</a>.</h5>
+    </div> 
+    <div class="w3-third w3-center">
+      <video autoplay loop muted playsinline width="100%">
+        <source src="movies/2layer_hcpAndRandom_m_0_neumannX.mp4" type="video/mp4">
+      </video>
+      Cahn Hilliard templating effect
+      <p>
+      <img src="images/nn.png" style="width:95%" alt="Encoder-decoder neural network used in XPCS data denoising."/>
+      Encoder-decoder neural network used in XPCS data denoising.</a>
+      <p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <h3>Machine learning for automated experimental data processing</h3>
+    <img src="images/xpcs.jpg" style="width:95%"/>   
+    Encoder-decoder neural network and XPCS sample data and analysis (credit: Brookhaven National Laboratory). For details, see <a href="https://www.nature.com/articles/s41598-021-93747-y">Konstantinova et al. 2020, Scientific Reports</a> and <a href="https://journals.aps.org/prresearch/pdf/10.1103/PhysRevResearch.4.033228">Konstantinova et al. 2021, Physical Review Research</a>.
+    <h5>X-Ray Photon Correlation Spectroscopy (XPCS) is an experimental technique that allows one to measure the dynamics of a material sample. As an experimental technique, the data produced from this method is corrupted by noise, which must be removed as the first step of an analysis. While this is possible, it traditionally requires a certain amount of human intervention to perform, and this has become a "bottleneck" which limits the pace of materials discovery.</h5>
+    <h5>Fortunately, computer vision methods borrowed from machine learning (ML) provide a way to resolve this issue in an automated way. To do so, we trained encoder-decoder neural networks in a supervised setting on datasets consisting of previously observed experimental data. The input data was a noise-corrupted two-time correlation function, and the output was a denoised version of the same correlation function. We were able to demonstrate positive results of this procedure on <a href="https://www.nature.com/articles/s41598-021-93747-y">equilibrium and quasi-equilibrium data</a>, as well as on some forms of <a href="https://journals.aps.org/prresearch/pdf/10.1103/PhysRevResearch.4.033228">non-equilibrium data</a>.</h5>
+  </div>
+</div>
+
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <h3>Uncertainty quantification for block copolymer design</h3>
+    <video autoplay loop muted playsinline width="95%">
+      <source src="movies/ch.mp4" type="video/mp4">
+    </video>
+    Simulation of thin-film BCP self-assembly in Cahn Hilliard.
+    <h5>Block copolymer (BCP) systems are of tremendous interest to scientists and engineers alike. From a theoretical point-of-view, they offer a glimpse at how complex, multiscale phenomena may develop through self-assembly. From an engineering point-of-view, the ability to direct/control the nanoscale structure of these materials may have relevance to battery design and semiconductor manufacturing.</h5>
+    <h5>We have developed an extension to the Discontinuous Galerkin code <a href="https://github.com/mlohry/maDGiCart-CH">Madgicart</a>, which allows us to compute solutions to the 3D nonlocal Cahn Hilliard equations. This code is written in C++, runs on a single GPU, and is containerized for portability using Docker and Singularity. <a href="https://petsc.org/release/">Petsc</a> is a notable third-party library used, which grants us easy access to implicit timestepping methods and various preconditioners.</h5>
+    <h5>We are currently researching how "realistic" parameter values for the Cahn Hilliard equations may be inferred from experimental data, using Bayesian methods. Doing so will enable fast prediction of exotic material designs and associated parameter sweeps that are currently too computationally prohibitive to perform.</h5>
+  </div>
+</div>
+
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+  <div class="w3-xlarge w3-padding-32">
+   <a href="https://www.linkedin.com/in/anthony-degennaro-69b272123/" class="w3-hover-text-indigo"><i class="fa fa-linkedin"></i></a>
+ </div>
+ <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+</footer>
+
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else { 
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+
+</body>
+</html>
