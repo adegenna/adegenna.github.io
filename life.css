@@ -1,0 +1,59 @@
+body {
+    padding: 20px;
+    background-color: #444;
+}
+
+#gridContainer {
+    padding-bottom: 10px;
+}
+
+table {
+    background-color: #000000;
+    border-spacing: 0;
+}
+
+td {
+    border: 1px solid #353535;
+    border-radius: 3px;
+    width: 10px;
+    height: 10px;
+}
+
+span {
+    color: #222;
+}
+
+#start,
+#clear,
+#random {
+    padding: .75em;
+    border-radius: 5px;
+    border: none;    
+    background: linear-gradient(
+        to bottom right,
+        #C5DEC6, #587559);
+}
+
+td.dead {
+    background-color: transparent;
+}
+
+td.s1 {
+    background-color: #ff0055;
+    border-radius: 10px;
+}
+
+td.s2 {
+    background-color: #fbff00;
+    border-radius: 10px;
+}
+
+td.s3 {
+    background-color: #2bff00;
+    border-radius: 10px;
+}
+
+td.s4 {
+    background-color: #0084ff;
+    border-radius: 10px;
+}
