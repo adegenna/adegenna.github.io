@@ -62,7 +62,7 @@ th {
   <div class="w3-content">
       <h1>Bayesian optimization for (low-speed) aerodynamics</h1>
       <h5>In this post, I want to walk through a classic problem in aerodynamics -- wing shape optimization -- through the lens of a modern technique in robust optimization called Bayesian optimization.
-        Looking back, one of the things I wished I'd had to play with while I was in undergrad was a "Goldilocks" computer model: one which is complex enough to be interesting, but still simple enough you can actually do it with modest effort.
+        I want to do this because, looking back, one of the things I wished I'd had to play with earlier in my journey was a "Goldilocks" computer model: one which is complex enough to be interesting, but still simple enough you can actually do it with modest effort.
         I'm hoping I get that balance right, so that this can be useful to anyone who wants an accessible entry point into the intersection of aerodynamics, uncertainty quantification, and optimization. If you'd like to experiment for yourself, the code is [here].</h5>
         
         <h5>I'll describe the problem first, then talk about the physics solver we'll use to model the aerodynamics (a panel method), then talk about the method we'll use for shape optimization (Bayesian optimization), and then we'll put all the pieces together.
@@ -75,6 +75,11 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <h3>The problem: airfoil shape optimization</h3>
+    <h5>Let's wax philosophical: engineering is all about compromises. 
+      The structural elements of an airplane need to be strong enough so that, you know, the wings don't break off and you fall out of the sky. So that would suggest we should build them out of a really strong material like steel, right?
+      Well, yes, except that steel is really heavy, which is not great for the main objective of getting up into the sky in the first place. This is why we use composites that are not as strong as steel, but strong enough, and far lighter. Compromises!</h5>
+
+    <h5>A really easy starting point for thinking about these sorts of things is the trade-offs between structural and aerodynamic considerations in wing design. So let's imagine this: you are a brand new aerospace engineer (congratulations). For your first project, you're told that the company is looking to design a new wing concept. It needs to be as thick as possible at the quarter-chord, in order to allow for a sufficiently large spar. At the same time, there are desired aerodynamic properties that need to be maintained in trim flight conditions. Assume that it's 1980 or thereabouts, so each computer simulation you run takes a nontrivial amount of time -- meaning you can't just "brute force" your way to an answer. So, what do you do?</h5>
   </div>
 </div>
 
@@ -85,12 +90,14 @@ th {
     <h3>Panel methods</h3>
   </div>
 </div>
+<hr>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <h3>Bayesian optimization</h3>
   </div>
 </div>
+<hr>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
