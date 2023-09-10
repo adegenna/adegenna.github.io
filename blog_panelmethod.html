@@ -8,6 +8,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
 body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
 .fa-coffee {font-size:200px}
@@ -61,7 +65,7 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
       <h1>Bayesian optimization for (low-speed) aerodynamics</h1>
-      <h5>In this post, I want to walk through a classic problem in aerodynamics -- wing shape optimization -- through the lens of a modern technique in robust optimization called Bayesian optimization.
+      <h5>In this post, I want to walk through a classic problem in aerodynamics <code>&#8212;</code> wing shape optimization <code>&#8212;</code> through the lens of a modern technique in robust optimization called Bayesian optimization.
         I want to do this because, looking back, one of the things I wished I'd had to play with earlier in my journey was a "Goldilocks" computer model: one which is complex enough to be interesting, but still simple enough you can actually do it with modest effort.
         I'm hoping I get that balance right, so that this can be useful to anyone who wants an accessible entry point into the intersection of aerodynamics, uncertainty quantification, and optimization. If you'd like to experiment for yourself, the code is [here].</h5>
         
@@ -76,52 +80,88 @@ th {
   <div class="w3-content">
     <h3>The problem: airfoil shape optimization</h3>
     <h5>Let's wax philosophical: engineering is all about compromises. 
-      The structural elements of an airplane need to be strong enough so that, you know, the wings don't break off and you fall out of the sky. So that would suggest we should build them out of a really strong material like steel, right?
-      Well, yes, except that steel is really heavy, which is not great for the main objective of getting up into the sky in the first place. This is why we use composites that are not as strong as steel, but strong enough, and far lighter. Compromises!</h5>
+      The structural elements of an airplane need to be strong enough so that the wings don't break off and you fall out of the sky. 
+      That would seem to suggest that we should build them out of a really strong material like steel, except that steel is really heavy, which is not great for the main objective of getting up into the sky in the first place. This is why we use composites that are not as strong as steel, but strong enough, and far lighter. 
+      Compromises!</h5>
 
     <h5>A really easy starting point for thinking about these sorts of things is the trade-offs between structural and aerodynamic considerations in wing design. 
       So let's imagine this: you are a brand new aerospace engineer (congratulations). 
       For your first project, you're told that the company is looking to design a new wing concept. 
       It needs to be as thick as possible at the quarter-chord, in order to allow for a sufficiently large spar. 
       At the same time, there are desired aerodynamic properties that need to be maintained in trim flight conditions. 
-      Assume that it's 1980 or thereabouts, so each computer simulation you run takes a nontrivial amount of time -- meaning you can't just "brute force" your way to an answer.</h5>
-      <!-- <figure>
-        <img src="images/brute_force_sampling.png" style="width:40%"/>
-        <figcaption>Not <s>cool</s> feasible.</figcaption>
-      </figure> -->
+      You want to use computer simulations or experiments to find the best answer, but these are time-consuming, or expensive, or just plain hard to do <code>&#8212;</code> meaning you can't just "brute force" your way to an answer.</h5>
 
-      <!-- <table>
-        <tr>
-        <td style='text-align:center;'>
-            <img src="images/brute_force_sampling.png"
-                 style='width:40%;'> <b>Not <s>cool</s> feasible.</b><img>
-        </td>
-        <td> 
-            <img src="images/smart_sampling.png"
-                 style='width:40%;'> <b>Very <s>cool</s> feasible.</b><img>
-        </td>
-        </tr>
-      </table> -->
-    <table>
+      <table>
       <tr>
         <td style='text-align:center;'>
       <figure>
-          <img src="images/brute_force_sampling.png" style='width:70%'/>
+          <img src="images/brute_force_sampling.png" style='width:100%'/>
           <figcaption class="figure-caption text-center"><b>Not <s>cool</s> feasible.</b></figcaption>
       </figure>
     </td>
-    <td> 
+    <td style='text-align:center;'> 
       <figure>
-        <img src="images/smart_sampling.png" style='width:70%'/>
+        <img src="images/smart_sampling.png" style='width:100%'/>
         <figcaption class="figure-caption text-center"><b>Very <s>cool</s> feasible.</b></figcaption>
       </figure>
       </td>
       </tr>
     </table>
 
-      <h5>So, what do you do?</h5>
+      <h5>In other words, we're looking to avoid the left picture, and do something qualititatively resembling the right one, where we test airfoil shapes in an intelligent way that balances exploring the parameter space with exploiting information from previous samples that seem close to an optimum.</h5>
+
+      <h5>So, how do you do this?</h5>
   </div>
 </div>
+
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <h3>The problem, part 2: parameterization of the airfoil</h3>
+    <h5>To do this, we'll first need a way of talking about the airfoil shapes we're going to test. 
+      If you were to discretize an airfoil into a set of, say, 100 points in the 2-d plane, and then consider all possible airfoils constructed by independent variations of those 100 points, then you would be optimizing over a 100 dimensional parameter space; or, to put it bluntly, up sh**'s creek without a paddle.
+    </h5>
+    <h5>How one can "compress" a space of enormous dimension such as this into a much smaller one without significant loss of information is what the field of low-dimensional modeling is all about.
+      This is near and dear to my heart, but also a vast subject that it deserves its own blog post (coming soon, probably).
+      For this problem, let's say you are simply <em>given</em> that we are optimizing over a 2 dimensional parameter space of symmetric airfoil shapes:
+    </h5>
+    \[ \pm y(m,T) = {T \over 0.2} \left[ a_0 \sqrt{x} + a_1 x + a_2 x^2 + a_3 x^3 \right] \;\;\; \text{for} \;\;\; 0 \le x \le m \]
+    \[ \pm y(m,T) = {T \over 0.2} \left[ d_0 + d_1 ( 1 - x ) + d_2 ( 1 - x^2 ) + d_3 ( 1 - x^3 ) \right] \;\;\; \text{for} \;\;\; m \le x \le 1 \]
+    <h5>I know <code>&#8212;</code> it's ugly. But this is a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness.
+      This is the space of admissible airfoils we will consider. 
+      Below are some examples of the sorts of shapes you can get. 
+    </h5>
+    <table>
+      <tr>
+        <td style='text-align:center;'>
+      <figure>
+          <img src="images/airfoils_mT_plot.png" style='width:40%'/>
+          <figcaption class="figure-caption text-center"><b>Parameter space.</b></figcaption>
+      </figure>
+    </td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td style='text-align:center;'> 
+      <figure>
+        <img src="images/airfoils_m_variation.png" style='width:100%'/>
+        <figcaption class="figure-caption text-center"><b>Variation in \(m\).</b></figcaption>
+      </figure>
+      </td>
+      <td style='text-align:center;'> 
+        <figure>
+          <img src="images/airfoils_T_variation.png" style='width:100%'/>
+          <figcaption class="figure-caption text-center"><b>Variation in \(T\).</b></figcaption>
+        </figure>
+        </td>  
+      </tr>
+    </table>
+
+  </div>
+</div>
+<hr>
 
 <hr>
 
