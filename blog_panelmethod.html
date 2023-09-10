@@ -15,6 +15,11 @@
 <style>
 body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
 .fa-coffee {font-size:200px}
+hr {
+  margin-top: 0.01em;
+  margin-bottom: 0.01em;
+  border-width: 10px;
+}
 header {
   background-image: url("images/research.png");
   background-size: 871px 256px;
@@ -128,7 +133,7 @@ th {
     </h5>
     \[ \pm y(m,T) = {T \over 0.2} \left[ a_0 \sqrt{x} + a_1 x + a_2 x^2 + a_3 x^3 \right] \;\;\; \text{for} \;\;\; 0 \le x \le m \]
     \[ \pm y(m,T) = {T \over 0.2} \left[ d_0 + d_1 ( 1 - x ) + d_2 ( 1 - x^2 ) + d_3 ( 1 - x^3 ) \right] \;\;\; \text{for} \;\;\; m \le x \le 1 \]
-    <h5>I know <code>&#8212;</code> it's ugly. But this is a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness.
+    <h5>I know <code>&#8212;</code> it's ugly. But this is a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness (the \(a_i,d_i\) are functions of \(m,T\)).
       This is the space of admissible airfoils we will consider. 
       Below are some examples of the sorts of shapes you can get.
     </h5>
@@ -136,13 +141,24 @@ th {
       <tr>
         <td style='text-align:center;'>
       <figure>
-          <img src="images/airfoils_mT_plot.png" style='width:40%'/>
+          <img src="images/airfoils_mT_plot.png" style='width:80%'/>
           <figcaption class="figure-caption text-center"><b>Parameter space.</b></figcaption>
       </figure>
     </td>
+    <td style='text-align:center;'> 
+      <figure>
+        <img src="images/airfoils_m_variation.png" style='width:100%'/>
+        <figcaption class="figure-caption text-center"><b>Variation in \(m\).</b></figcaption>
+      </figure>
+      <figure>
+        <img src="images/airfoils_T_variation.png" style='width:100%'/>
+        <figcaption class="figure-caption text-center"><b>Variation in \(T\).</b></figcaption>
+      </figure>
+    </td>  
   </tr>
 </table>
-<table>
+
+<!-- <table>
   <tr>
     <td style='text-align:center;'> 
       <figure>
@@ -157,11 +173,10 @@ th {
         </figure>
         </td>  
       </tr>
-    </table>
+    </table> -->
 
   </div>
 </div>
-<hr>
 
 <hr>
 
