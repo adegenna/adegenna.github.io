@@ -30,7 +30,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   border: None;
-  margin-top: -22px;
+  margin-top: 0px;
   font-family: "Lato", sans-serif;
 }
 /*tr:nth-child(even) {
@@ -70,10 +70,10 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
       <h1>Bayesian optimization for (low-speed) aerodynamics</h1>
-      <h5>In this post, I want to walk through a classic problem in aerodynamics <code>&#8212;</code> wing shape optimization <code>&#8212;</code> through the lens of a modern technique in robust optimization called Bayesian optimization.
+      <h5>In this post, I want to walk through a classic problem in aerodynamics <code>&#8212;</code> wing shape optimization <code>&#8212;</code> through the lens of a modern technique in robust optimization called Bayesian optimization (BO).
         I want to do this because, looking back, one of the things I wished I'd had to play with earlier in my journey was a "Goldilocks" computer model: one which is complex enough to be interesting, but still simple enough you can actually do it with modest effort.
         I'm hoping I get that balance right, so that this can be useful to anyone who wants an accessible entry point into the intersection of aerodynamics, uncertainty quantification, and optimization. If you'd like to experiment for yourself, the code is [here].</h5>
-        
+
         <h5>I'll describe the problem first, then talk about the physics solver we'll use to model the aerodynamics (a panel method), then talk about the method we'll use for shape optimization (Bayesian optimization), and then we'll put all the pieces together.
       </a></h5>
   </div>
@@ -184,6 +184,26 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <h3>Computing the aerodynamics: panel methods</h3>
+    <h5>
+      Alright, so we have a parameter space to explore. Let's talk about how we compute a value for a given point in that space.
+      For this problem, we'll use something called a panel method to compute the pressure distribution for a given airfoil.
+      Panel methods, or potential flow solvers, are a way of approximating the solution to Laplace's equation:
+      \[ \nabla^2 \phi = 0 \]
+      Fluid flows are, of course, governed at the continuum level by Navier-Stokes. 
+      However! If one assumes the flow to be (1) inviscid, (2) irrotational, (3) incompressible, and (4) steady-state, then these equations effectively reduce to Laplace's equation.
+      For boundary conditions, we constrain the airfoil surface to be a streamline of the flow. 
+      This is equivalent to saying that the potential should not vary in the direction normal to the surface \(\mathbf{x}_{\mathcal{S}}\) of the airfoil:
+      \[ \frac{\partial \phi( \mathbf{x}_{\mathcal{S}} )}{\partial \hat{u}_n} = 0 \]
+      The Laplace equation is linear and homogeneous, which means we are free to construct solutions to it using a superposition of Green's functions of the \(\nabla^2(\cdot)\) operator.
+      One must take care in choosing these elements, and additionally in enforcing an effective Kutta condition (or else the solution will have zero lift), but that's essentially it.
+      </h5>
+      <h5>
+      If that was too mathy, the brass-tacks version goes as follows. 
+      We first cover the airfoil surface in panels, where each panel exerts an influence on the value of the potential \(\phi(\mathbf{x})\) at any point \(\mathbf{x}\).
+      At the center point of each panel, we demand that the total potential influence exerted by all panels sum to satisfy the zero-normal flow boundary condition.
+      If we have \(N\) panels, then this gives us a system of \(N\) linear equations to assemble and solve.
+      Solving the system yields the potential \(\phi(\mathbf{x}_{\mathcal{S}})\), which can be differentiated to find the surface pressure distribution.
+    </h5>
   </div>
 </div>
 <hr>
@@ -191,6 +211,18 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <h3>Bayesian optimization</h3>
+    <table>
+      <tr>
+        <td style='text-align:center; width:50%'>
+        <video autoplay loop muted playsinline width="100%">
+        <source src="movies/bo.mp4" type="video/mp4">
+        </video>
+        <figure>
+        <figcaption class="figure-caption text-center"><b>BO demo. An unknown function is approximated by a Gaussian process, whose mean <em>left</em> and variance <em>right</em> evolve as more samples are chosen. Notice how the method balances <em>exploring</em> new regions of parameter space which have high uncertainty (variance) with <em>exploiting</em> pre-existing knowledge of the location of minima. </b></figcaption>
+        </figure>
+      </td>
+      </tr>
+    </table>  
   </div>
 </div>
 <hr>
