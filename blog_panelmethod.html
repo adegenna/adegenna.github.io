@@ -93,7 +93,26 @@ th {
       So let's imagine this: you are a brand new aerospace engineer (congratulations). 
       For your first project, you're told that the company is looking to design a new wing concept. 
       It needs to be as thick as possible at the quarter-chord, in order to allow for a sufficiently large spar. 
-      At the same time, there are desired aerodynamic properties that need to be maintained in trim flight conditions. 
+      At the same time, there are desired aerodynamic properties that need to be maintained in trim flight conditions.</h5>
+      
+      <table>
+        <tr>
+          <td style='text-align:center; width:50%'>
+        <figure>
+            <img src="images/afoil_spar.png" style='width:100%'/>
+            <figcaption class="figure-caption text-center"><b>Desired structure (airfoil thickness).</b></figcaption>
+        </figure>
+      </td>
+      <td style='text-align:center;'> 
+        <figure>
+          <img src="images/cp_target.png" style='width:100%'/>
+          <figcaption class="figure-caption text-center"><b>Desired aerodynamics (pressure distribution).</b></figcaption>
+        </figure>
+        </td>
+        </tr>
+      </table>  
+      
+    <h5> So, you'll need to find the airfoil shape that best satisfies both objectives simultaneously.
       You want to use computer simulations or experiments to find the best answer, but these are time-consuming, or expensive, or just plain hard to do <code>&#8212;</code> meaning you can't just "brute force" your way to an answer.</h5>
 
       <table>
@@ -101,13 +120,13 @@ th {
         <td style='text-align:center;'>
       <figure>
           <img src="images/brute_force_sampling.png" style='width:100%'/>
-          <figcaption class="figure-caption text-center"><b>Not <s>cool</s> feasible.</b></figcaption>
+          <figcaption class="figure-caption text-center"><b>Not a <s>cool</s> feasible way to find the best airfoil.</b></figcaption>
       </figure>
     </td>
     <td style='text-align:center;'> 
       <figure>
         <img src="images/smart_sampling.png" style='width:100%'/>
-        <figcaption class="figure-caption text-center"><b>Very <s>cool</s> feasible.</b></figcaption>
+        <figcaption class="figure-caption text-center"><b>Very <s>cool</s> feasible way to find the best airfoil.</b></figcaption>
       </figure>
       </td>
       </tr>
@@ -125,7 +144,8 @@ th {
   <div class="w3-content">
     <h3>The problem, part 2: parameterization of the airfoil</h3>
     <h5>To do this, we'll first need a way of talking about the airfoil shapes we're going to test. 
-      If you were to discretize an airfoil into a set of, say, 100 points in the 2-d plane, and then consider all possible airfoils constructed by independent variations of those 100 points, then you would be optimizing over a 100 dimensional parameter space; or, to put it bluntly, up sh**'s creek without a paddle.
+      If you were to discretize an airfoil into a set of, say, 100 points in the 2-d plane, and then consider all possible airfoils constructed by independent variations of those 100 points, then you would be optimizing over a 100 dimensional parameter space.
+      This is not the kind of place you should like to be in.
     </h5>
     <h5>How one can "compress" a space of enormous dimension such as this into a much smaller one without significant loss of information is what the field of low-dimensional modeling is all about.
       This is near and dear to my heart, but also a vast subject that it deserves its own blog post (coming soon, probably).
@@ -133,7 +153,7 @@ th {
     </h5>
     \[ \pm y(m,T) = {T \over 0.2} \left[ a_0 \sqrt{x} + a_1 x + a_2 x^2 + a_3 x^3 \right] \;\;\; \text{for} \;\;\; 0 \le x \le m \]
     \[ \pm y(m,T) = {T \over 0.2} \left[ d_0 + d_1 ( 1 - x ) + d_2 ( 1 - x^2 ) + d_3 ( 1 - x^3 ) \right] \;\;\; \text{for} \;\;\; m \le x \le 1 \]
-    <h5>I know <code>&#8212;</code> it's ugly. But this is a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness (the \(a_i,d_i\) are functions of \(m,T\)).
+    <h5>This equation definitely does not win any prizes for mathematical beauty. Nevertheless, it's a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness (the \(a_i,d_i\) are functions of \(m,T\)).
       This is the space of admissible airfoils we will consider. 
       Below are some examples of the sorts of shapes you can get.
     </h5>
