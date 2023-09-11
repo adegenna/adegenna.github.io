@@ -134,7 +134,6 @@ th {
 
       <h5>In other words, we're looking to avoid the left picture, and do something qualititatively resembling the right one, where we test airfoil shapes in an intelligent way that balances exploring the parameter space with exploiting information from previous samples that seem close to an optimum.</h5>
 
-      <h5>So, how do you do this?</h5>
   </div>
 </div>
 
@@ -142,10 +141,10 @@ th {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <h3>The problem, part 2: parameterization of the airfoil</h3>
-    <h5>To do this, we'll first need a way of talking about the airfoil shapes we're going to test. 
+    <h3>So we need to vary the airfoil shape. How do we do that?</h3>
+    <h5>It's important to discuss this up-front because the dimensionality of the parameter space could dictate what methods are available to us for optimization. 
       If you were to discretize an airfoil into a set of, say, 100 points in the 2-d plane, and then consider all possible airfoils constructed by independent variations of those 100 points, then you would be optimizing over a 100 dimensional parameter space.
-      This is not the kind of place you should like to be in.
+      This is not the kind of place you should prefer to be in (though in some problems, you may not have a choice!).
     </h5>
     <h5>How one can "compress" a space of enormous dimension such as this into a much smaller one without significant loss of information is what the field of low-dimensional modeling is all about.
       This is near and dear to my heart, but also a vast subject that it deserves its own blog post (coming soon, probably).
@@ -184,7 +183,7 @@ th {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <h3>Panel methods</h3>
+    <h3>Computing the aerodynamics: panel methods</h3>
   </div>
 </div>
 <hr>
