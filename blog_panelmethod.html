@@ -237,7 +237,7 @@ th {
         <source src="movies/bo.mp4" type="video/mp4">
         </video>
         <figure>
-        <figcaption class="figure-caption text-center"><b>BO demo. An unknown function is approximated by a Gaussian process, whose mean <em>left</em> and variance <em>right</em> evolve as more samples are chosen. Notice how the method balances <em>exploring</em> new regions of parameter space which have high uncertainty (variance) with <em>exploiting</em> pre-existing knowledge of the location of minima. </b></figcaption>
+        <figcaption class="figure-caption text-center"><b>BO demo. An unknown function is approximated by a Gaussian process, whose mean (<em>left</em>) and variance (<em>right</em>) evolve as more samples are chosen. Notice how the method balances <em>exploring</em> new regions of parameter space which have high uncertainty (variance) with <em>exploiting</em> pre-existing knowledge of the location of minima. </b></figcaption>
         </figure>
       </td>
       </tr>
@@ -245,23 +245,48 @@ th {
     <h5>
       Now, we finally get to the question of how to solve the optimization problem.
       In this post, we'll approach this with Bayesian optimization (BO).
-      This technique is very popular for optimization problems involving a modest (\(\lt 20\)) number of parameters, owing to its ability to strategically place sample points in a way that balances exploration of unseen regions with exploitation of previously observed minima.
+      I'm showing above an example of BO on a function that I made up, so that you can get an intuition for what it's doing.
+      The goal is to find the global minimum of this function as quickly as possible.
+      We start with random sample evaluations, given by the green 'x' marks.
+      The left figure shows our (average) estimate of the unknown function (using a technique we'll talk about in this section), and the right figure shows our uncertainty about our predictions at those values.
+      The movie shows the evolution of both as we add more sample evaluations.
+      Two things should be apparent:
+      (1) BO adds samples in a way that balances checking-out new areas of parameter space (exploration) with "honing-in" around our current estimates of the minimum (exploitation),
+      (2) as the number of samples increases, our uncertainty tends to decrease everywhere, until we are highly certain of our predictions.
+    </h5>
+    <h5>
+      Heads-up: this section gets a bit mathy. I've tried to compress everything to just the bare minimum needed to understand the core ideas, but there's a lot I'm leaving out.
+      I'd encourage anyone who's interested in learning more to poke around on the web for more details.
     </h5>
     <h5>
       Following convention in the field, we'll write the general optimization problem as a maximization problem (though the same ideas apply if we'd like to minimize a function):
-      \[ \mathbf{x}^* = \text{argmax}_{\mathbf{x} \in X} f(\mathbf{x}) \]
-      In BO, we begin by plunking down an initial set of a few samples in parameter space:
-      \[ X_0 = \lbrace \mathbf{x}_1 , \dots , \mathbf{x}_k \rbrace \]
-      We compute their function values, and then construct a surrogate that interpolates/extrapolates \(f(\mathbf{x})\) at unseen values of \(\mathbf{x}\).
-      The surrogate is a Gaussian process, which can be conceptualized as a high-dimensional normal distribution imposed on the parameter space, with a mean function \(\mu(\mathbf{x})\) and covariance function, or <em>kernel</em>, \(\Sigma(\mathbf{x},\mathbf{x}')\).
-      Using our data \(X_0\), this gives us a prior distribution:
-      \[ f(X_0) = \text{Normal}( \mu(X_0) , \Sigma(X_0 , X_0) ) \]
-      As we collect more data points, this distribution can be updated, giving a posterior (and hopefully better) estimate of the function \(f(\mathbf{x})\).
-      Last major question is: how do we determine where to put the new samples in order to do that?
-      In BO, a popular method for doing this is by using an acquisition function called the expected improvement.
-      This can be expressed as an expectation maximization:
+      \[ \mathbf{x}^* = \text{argmax}_{\mathbf{x} \in X} [f(\mathbf{x})] \]
+      In BO, we want to construct a surrogate that interpolates/extrapolates \(f(\mathbf{x})\) at unseen values of \(\mathbf{x}\), and use this approximation to (1) estimate the optimizer \(\mathbf{x}^*\) and (2) suggest (intelligently!) new locations to sample.
+      We begin by plunking down an initial set of a few samples in parameter space:
+      \[ X_0 = \lbrace \mathbf{x}_1 , \dots , \mathbf{x}_k \rbrace \;\; , \;\; F_0 = \lbrace f(\mathbf{x}_1) , \dots , f(\mathbf{x}_k) \rbrace\]
+      The surrogate we construct is a particular type of stochastic process, called a <em>Gaussian process</em> (GP).
+      When using a GP, we make the assumption that probability that we observed the outputs \(F_0\) at inputs \(X_0\) is normally-distributed about a pre-specified mean function, \(m(\mathbf{x})\), and covariance function or <em>kernel</em>, \(\sigma(\mathbf{x},\mathbf{x}')\):
+      \[ p(F_0|X_0) = \text{Normal}( F_0 | \mu_0 , \Sigma_0 ) \]
+      Here, \(\mu_0 = [ m(\mathbf{x}_1) , \dots , m(\mathbf{x}_k) ]\), and \([\Sigma_0]_{i,j} = \sigma(\mathbf{x}_i , \mathbf{x}_j)\).
+      In order to interpolate/extrapolate, one can derive a posterior prediction at an unseen data point \(\mathbf{x}_{\text{new}}\) from this, i.e. \( p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) \), which will again be normally-distributed, but with updated mean/covariance:
+      \[ p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) = \text{Normal}( f_{\text{new}} | \mu_{\text{new}} , \Sigma_{\text{new}} )\]
+      I don't want to go too far into the weeds, so I'm going to omit the details of how one may compute the updates \(\mu_{\text{new}} , \Sigma_{\text{new}}\).
+      But the bottom-line is this: with some sample points, we can construct a GP surrogate from that data that approximates function values everywhere in parameter space, <em>and</em> provides uncertainty estimates at those locations.
+      As we collect more data points, this GP model can be updated, giving a (hopefully better) estimate of the true function \(f(\mathbf{x})\).
+      </h5>
+      <h5>      
+      Returning to BO, the last major question is: how do we determine where to put the new samples in order to do that?
+      A popular method for doing this is by using an acquisition function called the <em>expected improvement</em>.
+      The intuition goes like this. 
+      Say after \(k\) sample points, \(\mathbf{x}_1 \dots \mathbf{x}_k\), our GP estimate of the function maximum is \(f^*_k\).
+      We'd like to choose for our next sample the one that we expect will give us the largest improvement on the \(f^*_k\).
+      We obviously don't know the function value until we evaluate it, but we can estimate this quantity using our current GP surrogate.
+      Mathematically, we can write this as an expectation maximization:
       \[ \mathbf{x}_{k+1} = \text{argmax}_{\mathbf{x} \in X} [ \text{EI}(\mathbf{x}) ] \]
-      \[ \text{EI}(\mathbf{x}) = \mathbb{E}[ \text{max}( f(\mathbf{x}) - f(\mathbf{x}^*) , 0 ) ] \]
+      \[ \text{EI}(\mathbf{x}) = \mathbb{E}_k[ \text{max}( f(\mathbf{x}) - f^*_k , 0 ) ] \]
+      Here, the \(\mathbb{E}_k[\cdot]\) indicates that the expectation is taken over the current GP surrogate constructed using our \(k\) sample points.
+      \(\text{EI}(\mathbf{x}\) may be evaluated analytically for a GP model, but again, I won't get into the details for that here.
+      And that, in a nutshell, is BO!
     </h5>
   </div>
 </div>
