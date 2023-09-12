@@ -204,13 +204,32 @@ th {
       If we have \(N\) panels, then this gives us a system of \(N\) linear equations to assemble and solve.
       Solving the system yields the potential \(\phi(\mathbf{x}_{\mathcal{S}})\), which can be differentiated to find the surface pressure distribution.
     </h5>
+
+    <table>
+      <tr>
+      <td style='text-align:center;'> 
+      <figure>
+        <img src="images/cp_panel_1.png" style='width:50%'/>
+        <figcaption class="figure-caption text-center"><b>Example pressure distribution computed with panel method (local pressure is proportional to arrow length).</b></figcaption>
+      </figure>
+    </td>  
+  </tr>
+</table>
+
+    <h5>
+      Now, let's address this: it may be objected that inviscid, irrotational, incompressible, steady-state flows don't really exist; certainly not on airplanes.
+      Is that true? Yup! They don't. Does this impose limitations on what panel methods can actually model? Yup! Panel methods don't predict viscous drag, stall, or other phenomena involving viscosity and high-speed aerodynamics.
+      Does this mean we should throw them in the trash? No! Panel methods have a long and successful history in low-speed applications for smooth airfoils at modest angles-of-attack.
+      And, compared to modern tools in computational fluid dynamics (CFD), they're relatively easy to code, and run very fast.
+      For these reasons, they're great, both as a starting point for building interest in CFD and as an accessible sandbox for optimization algorithms.
+    </h5>
   </div>
 </div>
 <hr>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <h3>Bayesian optimization</h3>
+    <h3>Solving the problem efficiently: Bayesian optimization</h3>
     <table>
       <tr>
         <td style='text-align:center; width:50%'>
@@ -223,6 +242,27 @@ th {
       </td>
       </tr>
     </table>  
+    <h5>
+      Now, we finally get to the question of how to solve the optimization problem.
+      In this post, we'll approach this with Bayesian optimization (BO).
+      This technique is very popular for optimization problems involving a modest (\(\lt 20\)) number of parameters, owing to its ability to strategically place sample points in a way that balances exploration of unseen regions with exploitation of previously observed minima.
+    </h5>
+    <h5>
+      Following convention in the field, we'll write the general optimization problem as a maximization problem (though the same ideas apply if we'd like to minimize a function):
+      \[ \mathbf{x}^* = \text{argmax}_{\mathbf{x} \in X} f(\mathbf{x}) \]
+      In BO, we begin by plunking down an initial set of a few samples in parameter space:
+      \[ X_0 = \lbrace \mathbf{x}_1 , \dots , \mathbf{x}_k \rbrace \]
+      We compute their function values, and then construct a surrogate that interpolates/extrapolates \(f(\mathbf{x})\) at unseen values of \(\mathbf{x}\).
+      The surrogate is a Gaussian process, which can be conceptualized as a high-dimensional normal distribution imposed on the parameter space, with a mean function \(\mu(\mathbf{x})\) and covariance function, or <em>kernel</em>, \(\Sigma(\mathbf{x},\mathbf{x}')\).
+      Using our data \(X_0\), this gives us a prior distribution:
+      \[ f(X_0) = \text{Normal}( \mu(X_0) , \Sigma(X_0 , X_0) ) \]
+      As we collect more data points, this distribution can be updated, giving a posterior (and hopefully better) estimate of the function \(f(\mathbf{x})\).
+      Last major question is: how do we determine where to put the new samples in order to do that?
+      In BO, a popular method for doing this is by using an acquisition function called the expected improvement.
+      This can be expressed as an expectation maximization:
+      \[ \mathbf{x}_{k+1} = \text{argmax}_{\mathbf{x} \in X} [ \text{EI}(\mathbf{x}) ] \]
+      \[ \text{EI}(\mathbf{x}) = \mathbb{E}[ \text{max}( f(\mathbf{x}) - f(\mathbf{x}^*) , 0 ) ] \]
+    </h5>
   </div>
 </div>
 <hr>
