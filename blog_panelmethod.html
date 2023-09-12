@@ -285,7 +285,7 @@ th {
       \[ \mathbf{x}_{k+1} = \text{argmax}_{\mathbf{x} \in X} [ \text{EI}(\mathbf{x}) ] \]
       \[ \text{EI}(\mathbf{x}) = \mathbb{E}_k[ \text{max}( f(\mathbf{x}) - f^*_k , 0 ) ] \]
       Here, the \(\mathbb{E}_k[\cdot]\) indicates that the expectation is taken over the current GP surrogate constructed using our \(k\) sample points.
-      \(\text{EI}(\mathbf{x}\) may be evaluated analytically for a GP model, but again, I won't get into the details for that here.
+      The \(\text{EI}(\mathbf{x})\) may be evaluated analytically for a GP model, but again, I won't get into the details for that here.
       And that, in a nutshell, is BO!
     </h5>
   </div>
@@ -295,6 +295,74 @@ th {
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <h3>Results</h3>
+    <h5>
+      At this point, we have all the tools needed to tackle the airfoil optimization problem.
+      The optimization problem I'll consider is this:
+      \[ J(m,T) = 1 - \text{exp}\left( -\frac{1}{2\sigma_1^2} ( z_{c/4}(m,T) - z_{c/4}^* )^2 \right) \text{exp}\left( -\frac{1}{2\sigma_2^2} \|C_P(x;m,T) - C_P^*(x) \|^2 \right) \]
+      Here, \((m,T)\) are the pair of airfoil shape parameters discussed earlier, \(z_{c/4}\) denotes the airfoil thickness at quarter-chord, and \(C_P(x)\) denotes the pressure distribution (computed at a trim angle-of-attack of \(\alpha=5^\circ\)) as a function of chordwise-distance.
+      \(z_{c/4}^*\) and \(C_P^*(x)\) are our target thickness and pressure distributions, respectively.
+    </h5>
+    <h5>
+      Let's first check out the performance of our BO routine:
+    </h5>
+    <table>
+      <tr>
+        <td style='text-align:center; width:50%'>
+        <video autoplay loop muted playsinline width="100%">
+        <source src="movies/bo_results_movie.mp4" type="video/mp4">
+        </video>
+        <figure>
+        <figcaption class="figure-caption text-center"><b>BO results (both parameters are linearly scaled here to lie between \([0,1]\)) with GP mean (<em>right</em>) and variance (<em>left</em>).</b></figcaption>
+        </figure>
+      </td>
+      </tr>
+    </table>
+    <h5>
+      It appears that after just 32 samples, the GP mean has "crystallized" with relatively low variance.
+      We see the clear presence of a global minimum in the upper-right corner.
+      Let's look at this optimal solution, and compare it to some other solutions.
+    </h5>
+
+    <table>
+      <tr>
+        <td style='text-align:center;'>
+          <figure>
+            <img src="images/bo_results_optimum.png" style='width:100%'/>
+            <figcaption class="figure-caption text-center"><b>Optimum.</b></figcaption>
+          </figure>
+          <figure>
+            <img src="images/bo_results_0p2_0p2.png" style='width:100%'/>
+            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.2,0.2)\).</b></figcaption>
+          </figure>    
+          <figure>
+            <img src="images/bo_results_0p4_0p7.png" style='width:100%'/>
+            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.4,0.7)\).</b></figcaption>
+          </figure>
+    </td> 
+  </tr>
+</table>
+
+<h5>
+  In the first column, I'm displaying the wing for a given \((m,T)\) combination (scaled so that both parameters are between \([0,1]\)) in black.
+  The dashed blue is a "base" airfoil (not chosen from the \((m,T)\) parameter space) that was used to generate the target pressure distribution.
+  The dashed green line is the target quarter-chord thickness. 
+  In the second column, I'm showing the computed pressure distribution for the top (blue) and bottom (red) airfoil surfaces, compared to the target pressure distribution (dashed).
+  And sure enough, we can see that the computed optimum does a far better job balancing the two goals than the others: the sample at \((0.2,0.2)\) is far too thin, and the pressure distribution is off by quite a bit; \((0.4,0.7)\) is much better for the target thickness, but still the pressure distribution is very wrong.
+</h5>
+
+
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <h3>References</h3>
+    <ul>
+      <li>Frazier, Peter I. "A tutorial on Bayesian optimization." arXiv preprint arXiv:1807.02811 (2018).</li>
+      <li>Williams, Christopher KI, and Carl Edward Rasmussen. "Gaussian processes for machine learning." Vol. 2. No. 3. Cambridge, MA: MIT press, 2006.</li>
+      <li>Katz, Joseph, and Allen Plotkin. "Low-speed aerodynamics." Vol. 13. Cambridge university press, 2001.</li>
+    </ul> 
   </div>
 </div>
 
