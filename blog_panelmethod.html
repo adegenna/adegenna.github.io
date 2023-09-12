@@ -69,12 +69,15 @@ th {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h1>Bayesian optimization for (low-speed) aerodynamics</h1>
-      <h5>In this post, I want to walk through a classic problem in aerodynamics <code>&#8212;</code> wing shape optimization <code>&#8212;</code> through the lens of a modern technique in robust optimization called Bayesian optimization (BO).
-        I want to do this because, looking back, one of the things I wished I'd had to play with earlier in my journey was a "Goldilocks" computer model: one which is complex enough to be interesting, but still simple enough you can actually do it with modest effort.
-        I'm hoping I get that balance right, so that this can be useful to anyone who wants an accessible entry point into the intersection of aerodynamics, uncertainty quantification, and optimization. If you'd like to experiment for yourself, the code is [here].</h5>
+      <h1>Bayesian optimization for aerodynamics</h1>
+      <h5>In this post, I want to walk through a classic problem in aerodynamics <code>&#8212;</code> wing shape optimization <code>&#8212;</code> through the lens of a modern technique in optimal experimental design called Bayesian optimization (BO).
+        I want to do this because, looking back to when I was in undergrad, I wished I'd had access more computer models that strike a "Goldilocks" balance of being complex enough to be relevant to real aerospace design, but still stimple enough that only a modest amount of effort is required to tinker with them.
+        I'm guessing a lot of folks who are early in their engineering journey feel similarly, and so I'd like to try and provide such a problem here.
+        I'm hoping this'll be useful to anyone who wants an accessible entry point into the intersection of aerodynamics, uncertainty quantification, and optimization.</h5>
 
-        <h5>I'll describe the problem first, then talk about the physics solver we'll use to model the aerodynamics (a panel method), then talk about the method we'll use for shape optimization (Bayesian optimization), and then we'll put all the pieces together.
+        <h5>I'll describe the problem first, then talk about the physics solver we'll use to model the aerodynamics, then talk about the method we'll use for shape optimization, and then we'll put all the pieces together.
+          As a heads-up, I'll only be giving a brief intro to both panel methods and Bayesian optimization; just the bare minimum to understand the core ideas.
+          I'd encourage anyone who's interested in learning more to glance at the references I've linked at the end, or just poke around the web.
       </a></h5>
   </div>
 </div>
@@ -89,10 +92,10 @@ th {
       That would seem to suggest that we should build them out of a really strong material like steel, except that steel is really heavy, which is not great for the main objective of getting up into the sky in the first place. This is why we use composites that are not as strong as steel, but strong enough, and far lighter. 
       Compromises!</h5>
 
-    <h5>A really easy starting point for thinking about these sorts of things is the trade-offs between structural and aerodynamic considerations in wing design. 
+    <h5>A nice starting point for thinking about these sorts of things is the trade-offs between structural and aerodynamic considerations in wing design. 
       So let's imagine this: you are a brand new aerospace engineer (congratulations). 
       For your first project, you're told that the company is looking to design a new wing concept. 
-      It needs to be as thick as possible at the quarter-chord, in order to allow for a sufficiently large spar. 
+      It needs to have a certain thickness at the quarter-chord, in order to allow for a sufficiently large spar. 
       At the same time, there are desired aerodynamic properties that need to be maintained in trim flight conditions.</h5>
       
       <table>
@@ -120,19 +123,21 @@ th {
         <td style='text-align:center;'>
       <figure>
           <img src="images/brute_force_sampling.png" style='width:100%'/>
-          <figcaption class="figure-caption text-center"><b>Not a <s>cool</s> feasible way to find the best airfoil.</b></figcaption>
+          <figcaption class="figure-caption text-center"><b>Design strategy #1: "grid up" the entire parameter space and test every single point. Not <s>cool</s> feasible.</b></figcaption>
       </figure>
     </td>
     <td style='text-align:center;'> 
       <figure>
         <img src="images/smart_sampling.png" style='width:100%'/>
-        <figcaption class="figure-caption text-center"><b>Very <s>cool</s> feasible way to find the best airfoil.</b></figcaption>
+        <figcaption class="figure-caption text-center"><b>Design strategy #2: use surrogate models to intelligently guide a sequence of samples. Very <s>cool</s> feasible.</b></figcaption>
       </figure>
       </td>
       </tr>
     </table>
 
-      <h5>In other words, we're looking to avoid the left picture, and do something qualititatively resembling the right one, where we test airfoil shapes in an intelligent way that balances exploring the parameter space with exploiting information from previous samples that seem close to an optimum.</h5>
+      <h5>In other words, we're looking to avoid the left picture, and instead do something resembling the right one, where we test airfoil shapes in an intelligent way that balances exploring the parameter space with exploiting information from previous samples that seem close to an optimum.
+        We want to quickly "rule out" regions of the parameter space that are unlikely to contain the optimal design, and "hone in" as quickly as possible on those areas that are likely to contain it.
+      </h5>
 
   </div>
 </div>
@@ -145,14 +150,17 @@ th {
     <h5>It's important to discuss this up-front because the dimensionality of the parameter space could dictate what methods are available to us for optimization. 
       If you were to discretize an airfoil into a set of, say, 100 points in the 2-d plane, and then consider all possible airfoils constructed by independent variations of those 100 points, then you would be optimizing over a 100 dimensional parameter space.
       This is not the kind of place you should prefer to be in (though in some problems, you may not have a choice!).
+      This begs the question: <em>can</em> we avoid being in such a setting?
     </h5>
-    <h5>How one can "compress" a space of enormous dimension such as this into a much smaller one without significant loss of information is what the field of low-dimensional modeling is all about.
+    <h5>Speaking generally, the problem of how to "compress" a space of enormous dimension into a much smaller one without significant loss of information is what the field of low-dimensional modeling is all about.
       This is near and dear to my heart, but also a vast subject that it deserves its own blog post (coming soon, probably).
-      For this problem, let's say you are simply <em>given</em> that we are optimizing over a 2 dimensional parameter space of symmetric airfoil shapes:
+      For this problem, the good news is, there already exist fairly low-dimensional parameterizations of airfoil shapes that we can just use directly.
+      One such parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) nicely compresses symmetric airfoil shapes into 2 parameters that govern the maximum airfoil thickness:
     </h5>
     \[ \pm y(m,T) = {T \over 0.2} \left[ a_0 \sqrt{x} + a_1 x + a_2 x^2 + a_3 x^3 \right] \;\;\; \text{for} \;\;\; 0 \le x \le m \]
     \[ \pm y(m,T) = {T \over 0.2} \left[ d_0 + d_1 ( 1 - x ) + d_2 ( 1 - x^2 ) + d_3 ( 1 - x^3 ) \right] \;\;\; \text{for} \;\;\; m \le x \le 1 \]
-    <h5>This equation definitely does not win any prizes for mathematical beauty. Nevertheless, it's a convenient parameterization (thanks to <a href="https://matthewwang.xyz/wp-content/uploads/2018/08/NACA-symmetric-universal-formula.pdf">this guy</a>) of the symmetric NACA 4-series family of airfoils, in terms of two parameters: \(m\), the location of maximum thickness, and \(T\), the maximum thickness (the \(a_i,d_i\) are functions of \(m,T\)).
+    <h5>This equation definitely does not win any prizes for mathematical beauty, but it is convenient.
+      The parameters are: \(m\), the location of maximum thickness, and \(T\), the maximum thickness (the \(a_i,d_i\) are functions of \(m,T\)).
       This is the space of admissible airfoils we will consider. 
       Below are some examples of the sorts of shapes you can get.
     </h5>
@@ -189,8 +197,9 @@ th {
       For this problem, we'll use something called a panel method to compute the pressure distribution for a given airfoil.
       Panel methods, or potential flow solvers, are a way of approximating the solution to Laplace's equation:
       \[ \nabla^2 \phi = 0 \]
+      Here, \(\phi(\mathbf{x})\) is a potential field at a given spatial location.
       Fluid flows are, of course, governed at the continuum level by Navier-Stokes. 
-      However! If one assumes the flow to be (1) inviscid, (2) irrotational, (3) incompressible, and (4) steady-state, then these equations effectively reduce to Laplace's equation.
+      However! If one assumes the flow to be (1) inviscid, (2) irrotational, (3) incompressible, and (4) steady-state, then these equations effectively reduce to Laplace's equation, and the fluid velocity can be derived directly from a potential field.
       For boundary conditions, we constrain the airfoil surface to be a streamline of the flow. 
       This is equivalent to saying that the potential should not vary in the direction normal to the surface \(\mathbf{x}_{\mathcal{S}}\) of the airfoil:
       \[ \frac{\partial \phi( \mathbf{x}_{\mathcal{S}} )}{\partial \hat{u}_n} = 0 \]
@@ -253,10 +262,6 @@ th {
       Two things should be apparent:
       (1) BO adds samples in a way that balances checking-out new areas of parameter space (exploration) with "honing-in" around our current estimates of the minimum (exploitation),
       (2) as the number of samples increases, our uncertainty tends to decrease everywhere, until we are highly certain of our predictions.
-    </h5>
-    <h5>
-      Heads-up: this section gets a bit mathy. I've tried to compress everything to just the bare minimum needed to understand the core ideas, but there's a lot I'm leaving out.
-      I'd encourage anyone who's interested in learning more to poke around on the web for more details.
     </h5>
     <h5>
       Following convention in the field, we'll write the general optimization problem as a maximization problem (though the same ideas apply if we'd like to minimize a function):
@@ -348,6 +353,10 @@ th {
   The dashed green line is the target quarter-chord thickness. 
   In the second column, I'm showing the computed pressure distribution for the top (blue) and bottom (red) airfoil surfaces, compared to the target pressure distribution (dashed).
   And sure enough, we can see that the computed optimum does a far better job balancing the two goals than the others: the sample at \((0.2,0.2)\) is far too thin, and the pressure distribution is off by quite a bit; \((0.4,0.7)\) is much better for the target thickness, but still the pressure distribution is very wrong.
+</h5>
+
+<h5>
+  And that's it. If these things are new to you, I hope this inspires you to get out and tinker!
 </h5>
 
 
