@@ -52,6 +52,7 @@ th {
     </li>
     <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
     <li class="w3-hide-small"><a href="research.html" class="w3-padding-large w3-hover-white">Research</a></li>
+    <li class="w3-hide-small"><a href="blog.html" class="w3-padding-large w3-hover-white">Blog</a></li>
     <li class="w3-hide-small"><a href="programs.html" class="w3-padding-large w3-hover-white">Programming Projects</a></li>
     <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Art and Writing</a></li>
   </ul>
@@ -60,6 +61,7 @@ th {
   <div id="navDemo" class="w3-hide w3-hide-large w3-hide-medium">
     <ul class="w3-navbar w3-left-align w3-large w3-black">
       <li><a class="w3-padding-large" href="research.html">Research</a></li>
+      <li><a class="w3-padding-large" href="blog.html">Blog</a></li>
       <li><a class="w3-padding-large" href="programs.html">Programming Projects</a></li>
       <li><a class="w3-padding-large" href="art.html">Art and Writing</a></li>
     </ul>
@@ -232,6 +234,12 @@ th {
       And, compared to modern tools in computational fluid dynamics (CFD), they're relatively easy to code, and run very fast.
       For these reasons, they're great, both as a starting point for building interest in CFD and as an accessible sandbox for optimization algorithms.
     </h5>
+    <h5>
+      In terms of software implementation: I'll be using a legacy solver written in Fortran by seminal researchers in the field.
+      You can find a Github repo containing it <a href="https://github.com/cibinjoseph/KatzPlotkin/tree/main/p08">here</a>.
+      You may have to make slight alterations for input/output purposes, but otherwise it should compile and run fine.
+      I've considered re-writing it in C++ and/or Python for maintainability/pedagogical purposes, but haven't gotten around to it just yet; if I do, I'll be sure to come back and link it here.  
+    </h5>
   </div>
 </div>
 <hr>
@@ -292,6 +300,13 @@ th {
       Here, the \(\mathbb{E}_k[\cdot]\) indicates that the expectation is taken over the current GP surrogate constructed using our \(k\) sample points.
       The \(\text{EI}(\mathbf{x})\) may be evaluated analytically for a GP model, but again, I won't get into the details for that here.
       And that, in a nutshell, is BO!
+    </h5>
+    <h5>
+      Regarding software, the great news is that BO is supported by lots of libraries in popular languages.
+      I'll be using Python's <a href="https://scikit-optimize.github.io/stable/">Scikit Optimize</a>, in particular <a href="https://scikit-optimize.github.io/stable/modules/generated/skopt.gp_minimize.html">this</a>, which makes "vanilla" BO very easy to use with arbitrary user-defined functions.
+      All you really have to do is write a Python function to compute the cost of a given airfoil by wrapping calls to the underlying Fortran panel code solver. 
+      Once done, you can pass this Python function to \(\text{skopt.gp_minimize}\).
+      If you know some Python, it should be a breeze.
     </h5>
   </div>
 </div>
@@ -356,7 +371,9 @@ th {
 </h5>
 
 <h5>
-  And that's it. If these things are new to you, I hope this inspires you to get out and tinker!
+  And that's it. 
+  Hopefully it's been fun to read, but above all, I hope this inspires you to get out and tinker!
+  That really is the best way to learn this stuff.
 </h5>
 
 
