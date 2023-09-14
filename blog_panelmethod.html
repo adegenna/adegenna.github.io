@@ -332,7 +332,7 @@ th {
         <source src="movies/bo_results_movie.mp4" type="video/mp4">
         </video>
         <figure>
-        <figcaption class="figure-caption text-center"><b>BO results (both parameters are linearly scaled here to lie between \([0,1]\)) with GP mean (<em>right</em>) and variance (<em>left</em>).</b></figcaption>
+        <figcaption class="figure-caption text-center"><b>BO results with GP mean (<em>right</em>) and variance (<em>left</em>).</b></figcaption>
         </figure>
       </td>
       </tr>
@@ -352,22 +352,22 @@ th {
           </figure>
           <figure>
             <img src="images/bo_results_0p2_0p2.png" style='width:100%'/>
-            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.2,0.2)\).</b></figcaption>
+            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.16,0.14)\).</b></figcaption>
           </figure>    
           <figure>
             <img src="images/bo_results_0p4_0p7.png" style='width:100%'/>
-            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.4,0.7)\).</b></figcaption>
+            <figcaption class="figure-caption text-center"><b>\((m,T)\) = \((0.22,0.24)\).</b></figcaption>
           </figure>
     </td> 
   </tr>
 </table>
 
 <h5>
-  In the first column, I'm displaying the wing for a given \((m,T)\) combination (scaled so that both parameters are between \([0,1]\)) in black.
+  In the first column, I'm displaying the wing for a given \((m,T)\) combination in black.
   The dashed blue is a "base" airfoil (not chosen from the \((m,T)\) parameter space) that was used to generate the target pressure distribution.
   The dashed green line is the target quarter-chord thickness. 
   In the second column, I'm showing the computed pressure distribution for the top (blue) and bottom (red) airfoil surfaces, compared to the target pressure distribution (dashed).
-  And sure enough, we can see that the computed optimum does a far better job balancing the two goals than the others: the sample at \((0.2,0.2)\) is far too thin, and the pressure distribution is off by quite a bit; \((0.4,0.7)\) is much better for the target thickness, but still the pressure distribution is very wrong.
+  And sure enough, we can see that the computed optimum does a far better job balancing the two goals than the others: the sample at \((0.16,0.14)\) is far too thin, and the pressure distribution is off by quite a bit; \((0.22,0.24)\) is much better for the target thickness, but still the pressure distribution is very wrong.
 </h5>
 
 <h5>
