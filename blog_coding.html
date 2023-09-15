@@ -108,13 +108,30 @@ table {
         If all you're doing is writing "Hello World," then none of this applies and you should ignore everything I'm saying.
         But what about if you're designing a program to compute the airflow over an airplane?
         What if you're designing a product that has users in mind, and these users can't be expected to be experts?
-        What if someone would like to use your code for new tasks after you've written it <code>&#8212;</code> what if that person is YOU, two years after you wrote it?
+        What if someone would like to adapt your code to handle new tasks after you've written it <code>&#8212;</code> what if that person is YOU, two years after you wrote it?
       </h5>
       <h5>
         I don't need to belabor the point (said everyone who has ever belabored the point, as I will now do).
         But the take-home is this. If you're doing something very complicated, and if there are people who would like to use what you are doing in an accessible way, great; that means it's important! But in that case, if you don't pay attention to proper software design, what you're doing is, you're creating a giant maze, and you're plunking your users (and likely also <em>yourself</em>) right down in the middle of it, with no food, no water and certainly no signposts on how to get out. You might make <a href="https://www.kafka-online.info/an-imperial-message.html">Franz Kafka</a> proud, but that's an issue of literary aesthetics, not useful engineering. Don't be that guy.
       </h5>
+      <h5>
+        And with that fully belabored, let's get on with it.
+      </h5>
   </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Code sample #1: DON'T DO THIS</h3>
+      <h5>
+        Alright. Let's start with the "wrong" way to do things.
+        For this post, we'll use the example of a custom solver for ordinary differential equations (ODEs).
+        In real life, you would use a third-party library, such as Scipy in Python, to integrate ODEs, but this is a convenient example for our purposes.
+      </h5>
+      <h5>
+        So in the hypothetical world of this post, you've just written this code here:
+      </h5>
 
   <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
@@ -200,10 +217,29 @@ table {
           </code>
         </pre>
       </div>
-        
+      <h5>
+        What's wrong with this? In the strict sense of functionality, nothing. It does exactly what you designed it to do: integrate the Lorenz equations, and it even makes a nice plot of the solution.
+      </h5>
+      <h5>
+        Excited by your success, your client says, "great! Could you also make it integrate the Duffing equation?"
+      </h5>
+      <h5>
+        And that's where the wind leaves your sails.
+      </h5>        
   </div>
 </div>
+<hr>
 
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Separating interface from implementation</h3>
+      <h5>
+        The biggest obstacle to fulfilling the request of your client <code>&#8212;</code> who has a strange affinity for toy dynamical systems, it would seem <code>&#8212;</code> is that the code which implements the time integrator is completely entangled with the code that implements the right-hand side.
+        This makes it impossible to implement a new right-hand side (Duffing) and "plug it into" your time integrator (e.g., RK4) without either (1) destroying the right-hand side code you already wrote and replacing it, or (2) duplicating code for the integrator, along with a horror show of even more kludgy "if-else" conditionals to mediate which right-hand side is integrated.
+      </h5>
+      <h5>
+        
+      </h5>
 
 
 
