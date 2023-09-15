@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="prism.css" rel="stylesheet" />
+</head>
+<title>Coding Blog Post | Anthony M. DeGennaro</title>
+<meta name="description" content="Research">
+<meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
+.fa-coffee {font-size:200px}
+hr {
+  margin-top: 0.01em;
+  margin-bottom: 0.01em;
+  border-width: 10px;
+}
+header {
+  background-image: url("images/research.png");
+  background-size: 871px 256px;
+  max-width: 871px;
+  margin: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: None;
+  margin-top: 0px;
+  font-family: "Lato", sans-serif;
+}
+.codebox {
+  /* Below are styles for the codebox (not the code itself) */
+  border:1px solid black;
+  background-color:#EEEEFF;
+  width:300px;
+  overflow:auto;    
+  padding:10px;
+}
+.codebox code {
+  /* Styles in here affect the text of the codebox */
+  font-size:0.9em;
+  /* You could also put all sorts of styling here, like different font, color, underline, etc. for the code. */
+}
+</style>
+<script src="prism.js"></script>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+  <ul class="w3-navbar w3-black w3-card-2 w3-left-align w3-large" style="background-color:#204e87">
+    <li class="w3-hide-medium w3-hide-large w3-opennav w3-right">
+      <a class="w3-padding-large w3-hover-white w3-large w3-black" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    </li>
+    <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
+    <li class="w3-hide-small"><a href="research.html" class="w3-padding-large w3-hover-white">Research</a></li>
+    <li class="w3-hide-small"><a href="blog.html" class="w3-padding-large w3-hover-white">Blog</a></li>
+    <li class="w3-hide-small"><a href="programs.html" class="w3-padding-large w3-hover-white">Programming Projects</a></li>
+    <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Art and Writing</a></li>
+  </ul>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-hide w3-hide-large w3-hide-medium">
+    <ul class="w3-navbar w3-left-align w3-large w3-black">
+      <li><a class="w3-padding-large" href="research.html">Research</a></li>
+      <li><a class="w3-padding-large" href="blog.html">Blog</a></li>
+      <li><a class="w3-padding-large" href="programs.html">Programming Projects</a></li>
+      <li><a class="w3-padding-large" href="art.html">Art and Writing</a></li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h1>Software design principles</h1>
+      <h5>  
+        Today we are going to talk about software: what to do, what not to do, and why it matters.
+        This falls squarely in the category of "stuff I wish someone had pointed out earlier, that way I wouldn't have had to learn it the hard way."
+        To cut to the chase: this'll mostly be about <em>interfaces</em>, and how to design them to make your code maintainable, usable, and extensible.
+      </h5>
+      <h5>
+        I've found that not everyone is entirely convinced that this stuff is important, so I want to spend some time up-front addressing that.
+        If you are already convinced that paying a little more attention to software design is a good thing, great! Go ahead and jump to the section where we look at some code.
+        If not, let me try to address some of the more common objections to this stuff, which hopefully might convince you otherwise.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Objection: I need results fast. I don't have time to make my code nice!</h3>
+      <h5>
+        ...And that's a totally fair point. 
+        I get it: we live in a world where clients need solutions quickly; where deadlines loom and an imperfect solution is better than nothing at all.
+        Why waste time on making sure things are nicely wrapped with a bow on top?
+      </h5>
+      <h5>
+        The answer, in a nutshell, has to do with (1) how <em>complex</em> your project is, and (2) how <em>robust</em> it needs to be.
+        If all you're doing is writing "Hello World," then none of this applies and you should ignore everything I'm saying.
+        But what about if you're designing a program to compute the airflow over an airplane?
+        What if you're designing a product that has users in mind, and these users can't be expected to be experts?
+        What if someone would like to use your code for new tasks after you've written it <code>&#8212;</code> what if that person is YOU, two years after you wrote it?
+      </h5>
+      <h5>
+        I don't need to belabor the point (said everyone who has ever belabored the point, as I will now do).
+        But the take-home is this. If you're doing something very complicated, and if there are people who would like to use what you are doing in an accessible way, great; that means it's important! But in that case, if you don't pay attention to proper software design, what you're doing is, you're creating a giant maze, and you're plunking your users (and likely also <em>yourself</em>) right down in the middle of it, with no food, no water and certainly no signposts on how to get out. You might make <a href="https://www.kafka-online.info/an-imperial-message.html">Franz Kafka</a> proud, but that's an issue of literary aesthetics, not useful engineering. Don't be that guy.
+      </h5>
+  </div>
+
+  <div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+  
+      <div class="box">
+        <pre>
+          <code class="language-python">
+            import numpy as np
+            import matplotlib.pyplot as plt
+            from mpl_toolkits import mplot3d
+            
+            t      = np.linspace( 0 , 10 , 1000 )
+            integration_type = 'forward_euler'
+            
+            dt     = t[1] - t[0]
+            X , P  = [] , []
+            params = [ 10 , 28 , 8./3 ] # sigma , rho , beta
+            x0     = np.random.uniform( [ 0.5 , 0.5 , 0.5 ] )
+            
+            x      = np.zeros( [ len(x0) , len(t) ] )
+            x[:,0] = x0
+            
+            if integration_type == 'forward_euler':
+            
+                for i in range(len(t)-1):
+                    
+                    x[0,i+1] = x[0,i] + dt * ( params[0] * ( x[1,i] - x[0,i] ) )
+                    x[1,i+1] = x[1,i] + dt * ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+                    x[2,i+1] = x[2,i] + dt * ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+            
+            elif integration_type == 'adams_bashforth':
+            
+                for i in range(len(t)-1):
+                    
+                    f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
+                    f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+                    f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+            
+                    f_xyz = np.array( [ f_x , f_y , f_z ] )
+            
+                    xyz_pred = x[:,i] + dt * f_xyz
+            
+                    f_xPred = ( params[0] * ( xyz_pred[1] - xyz_pred[0] ) )
+                    f_yPred = ( xyz_pred[0] * ( params[1] - xyz_pred[2] ) - xyz_pred[1] )
+                    f_zPred = ( xyz_pred[0] * xyz_pred[1] - params[2] * xyz_pred[2] )
+            
+                    f_xyzPred = np.array( [ f_xPred , f_yPred , f_zPred ] )
+            
+                    x[:,i+1] = xyz_pred + 1.5 * dt * f_xyzPred - 0.5 * dt * f_xyz
+            
+            elif integration_type == 'rk4':
+            
+                for i in range(len(t)-1):
+            
+                    f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
+                    f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+                    f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+                    k1 = np.array( [ f_x , f_y , f_z ] )
+            
+                    f_x_k2 = ( params[0] * ( ( x[1,i] + dt/2 * k1[1] ) - ( x[0,i] + dt/2 * k1[0] ) ) )
+                    f_y_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( params[1] - ( x[2,i] + dt/2 * k1[2] ) ) - ( x[1,i] + dt/2 * k1[1] ) )
+                    f_z_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( x[1,i] + dt/2 * k1[1] ) - params[2] * ( x[2,i] + dt/2 * k1[2] ) )
+                    k2 = np.array( [ f_x_k2 , f_y_k2 , f_z_k2 ] )
+            
+                    f_x_k3 = ( params[0] * ( ( x[1,i] + dt/2 * k2[1] ) - ( x[0,i] + dt/2 * k2[0] ) ) )
+                    f_y_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( params[1] - ( x[2,i] + dt/2 * k2[2] ) ) - ( x[1,i] + dt/2 * k2[1] ) )
+                    f_z_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( x[1,i] + dt/2 * k2[1] ) - params[2] * ( x[2,i] + dt/2 * k2[2] ) )
+                    k3 = np.array( [ f_x_k3 , f_y_k3 , f_z_k3 ] )
+            
+                    f_x_k4 = ( params[0] * ( ( x[1,i] + dt/2 * k3[1] ) - ( x[0,i] + dt/2 * k3[0] ) ) )
+                    f_y_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( params[1] - ( x[2,i] + dt/2 * k3[2] ) ) - ( x[1,i] + dt/2 * k3[1] ) )
+                    f_z_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( x[1,i] + dt/2 * k3[1] ) - params[2] * ( x[2,i] + dt/2 * k3[2] ) )
+                    k4 = np.array( [ f_x_k4 , f_y_k4 , f_z_k4 ] )
+            
+                    x[:,i+1] = x[:,i] + 1./6 * dt * ( k1 + 2*k2 + 2*k3 + k4 )
+                
+            
+            fig = plt.figure()
+            ax  = fig.add_subplot( projection='3d' )
+            ax.plot3D( x[0] , x[1] , x[2] )
+            
+            plt.show()
+          </code>
+        </pre>
+      </div>
+        
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+  <div class="w3-xlarge w3-padding-32">
+   <a href="https://www.linkedin.com/in/anthony-degennaro-69b272123/" class="w3-hover-text-indigo"><i class="fa fa-linkedin"></i></a>
+ </div>
+ <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+</footer>
+
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else { 
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+
+</body>
+</html>
