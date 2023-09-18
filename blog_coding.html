@@ -123,7 +123,7 @@ table {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h3>Code sample #1: DON'T DO THIS</h3>
+      <h3>Code sample #1, a.k.a. "the wrong way"</h3>
       <h5>
         Alright. Let's start with the "wrong" way to do things.
         For this post, we'll use the example of a custom solver for ordinary differential equations (ODEs).
@@ -212,7 +212,6 @@ table {
             fig = plt.figure()
             ax  = fig.add_subplot( projection='3d' )
             ax.plot3D( x[0] , x[1] , x[2] )
-            
             plt.show()
           </code>
         </pre>
@@ -235,16 +234,78 @@ table {
       <h3>Separating interface from implementation</h3>
       <h5>
         The biggest obstacle to fulfilling the request of your client <code>&#8212;</code> who has a strange affinity for toy dynamical systems, it would seem <code>&#8212;</code> is that the code which implements the time integrator is completely entangled with the code that implements the right-hand side.
-        This makes it impossible to implement a new right-hand side (Duffing) and "plug it into" your time integrator (e.g., RK4) without either (1) destroying the right-hand side code you already wrote and replacing it, or (2) duplicating code for the integrator, along with a horror show of even more kludgy "if-else" conditionals to mediate which right-hand side is integrated.
+        This makes it impossible to implement a new right-hand side (Duffing) and "plug it into" your time integrator (e.g., RK4) without either (1) destroying the code you already wrote and replacing it, or (2) duplicating code for the integrator, along with a horror show of even more kludgy "if-else" conditionals to mediate which right-hand side is integrated.
       </h5>
       <h5>
-        
+        The solution here is twofold: first, we need to <em>separate</em> the right-hand side from the integrator; doing so will make it much easier to implement new right-hand sides while leaving the integrator code unchanged.
+        Of course, these are not completely independent concepts -- after all, a time integrator exists to integrate a right-hand side.
+        Recognizing this leads to the second part of the solution: we should link the integrator and right-hand side objects together through <em>composition</em>, which will allow us to implement the loose dependencies we are looking for.
       </h5>
+      <h5>
+        By now, you may be starting to have a high-level vision that looks something like this:
+      </h5>
+      <div class="w3-row-padding w3-padding-64 w3-container">
+        <div class="w3-content">
+          <div class="box">
+            <pre>
+              <code class="language-python">
+                # make the RHS object first, independent of anything else
+                rhs        = Lorenz()
+                # integrator is composed of a rhs
+                integrator = Forward_Euler( rhs , args )
+              </code>
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      <h5>
+        We're ready to take a look at the full version of this below. 
+      </h5>
+  </div>
+</div>
+<hr>
 
 
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Code sample #2, a.k.a. "the right way"</h3>
+      <h5>This is the high-level refactored version of the original ODE solver:</h5>
+      <div class="w3-row-padding w3-padding-64 w3-container">
+        <div class="w3-content">
+          <div class="box">
+            <pre>
+          <code class="language-python">
+            import numpy as np
+            import matplotlib.pyplot as plt
+            from mpl_toolkits import mplot3d
+            from integrator import *
+            from ode_rhs import *
 
+            rhs        = Lorenz()
+            time       = np.linspace( 0 , 10 , 1000 )
+            x0         = np.array( [ 0.5 , 0.5 , 0.5 ] )
+            params     = { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 }
+            integrator = Forward_Euler( rhs , time )
+            x          = integrator.solve( x0 , params )
 
+            fig = plt.figure()
+            ax  = fig.add_subplot( projection='3d' )
+            ax.plot3D( x[0] , x[1] , x[2] )
+            plt.show()
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
 
+    <h5>
+      It should be pretty obvious why this is preferable: it's shorter and much easier to understand.
+      Why is that? For two reasons: one, as we've already discussed, we've disentangled the right-hand side and time integrator; they are now distinct pieces of code.
+      But the biggest reason this is easier on the eyes is because we've <em>hidden the implementation details</em>.
+      Remember that this is just the highest level code: nowhere does it say here <em>how</em> <code>Lorenz</code> or <code>Forward_Euler</code> actually work.
+      That's intentional: the user shouldn't have to <em>care</em> about that, it's not their job. 
+    </h5>
 
 <!-- Footer -->
 <footer class="w3-container w3-padding-64 w3-center w3-opacity">  
