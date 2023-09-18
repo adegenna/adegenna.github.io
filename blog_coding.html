@@ -283,12 +283,13 @@ table {
             from ode_rhs import *
 
             rhs        = Lorenz()
-            time       = np.linspace( 0 , 10 , 1000 )
+            dt         = 0.01
+            time_steps = 1000
             x0         = np.array( [ 0.5 , 0.5 , 0.5 ] )
             params     = { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 }
-            integrator = Forward_Euler( rhs , time )
+            integrator = Forward_Euler( rhs , dt , time_steps )
             x          = integrator.solve( x0 , params )
-
+            
             fig = plt.figure()
             ax  = fig.add_subplot( projection='3d' )
             ax.plot3D( x[0] , x[1] , x[2] )
@@ -304,8 +305,116 @@ table {
       Why is that? For two reasons: one, as we've already discussed, we've disentangled the right-hand side and time integrator; they are now distinct pieces of code.
       But the biggest reason this is easier on the eyes is because we've <em>hidden the implementation details</em>.
       Remember that this is just the highest level code: nowhere does it say here <em>how</em> <code>Lorenz</code> or <code>Forward_Euler</code> actually work.
-      That's intentional: the user shouldn't have to <em>care</em> about that, it's not their job. 
+      That's intentional: the user shouldn't have to care about that. 
     </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Implementation details: time integrator</h3>
+      <h5>
+        There are two interesting questions we need to answer regarding the time integrator: what defines a valid time integrator, and how does it use its right-hand side (given to it at construction)?
+        The first question is important because there are obviously many schemes for time integration (e.g., forward Euler, Runge Kutta).
+        In order for all of them to be usable in consistent ways, we'd like to unite them with <em>inheritance</em>.
+        Many would argue (as would I) that inheritance works best when it's shallow and broad; this prevents all kinds of dangerous things from happening (see: <a href="https://en.wikipedia.org/wiki/Multiple_inheritance">Diamond inheritance</a>).
+      </h5>
+      <h5>
+        With that in mind, we make a very basic base class that defines the minimal set of things that a time integrator needs to do, like so:
+      </h5>
+
+      <div class="w3-row-padding w3-padding-64 w3-container">
+        <div class="w3-content">
+          <div class="box">
+            <pre>
+          <code class="language-python">
+            import numpy as np
+            from abc import ABC, abstractmethod
+            from typing import Dict
+            from ode_rhs import RHS
+
+            class Integrator(ABC):
+
+                def __init__( self , 
+                              rhs : RHS , 
+                              dt : float , 
+                              t_steps : int ):
+                    
+                    """
+                    Base class for time integrators.
+            
+                    Args: 
+                        rhs: instance of RHS
+                        dt: float, desired (fixed) time-step
+                        t_steps: int, desired number of time-steps
+                    """
+            
+                    self._rhs  = rhs
+                    self._dt   = dt
+                    self._n    = t_steps
+            
+                @abstractmethod
+                def solve( self , 
+                          x0 : np.ndarray , 
+                          param : Dict[ str , float ] ) -> np.ndarray:
+                    
+                    """
+                    Integrate the ODE forward in time.
+                    
+                    Args:
+                        x0: np.ndarray, initial state values
+                        param: dictionary mapping rhs parameter names to parameter values
+                    Returns:
+                        2-D numpy array of size (X,T) where X is state dimension and T is number of time steps
+                    """
+            
+                    pass
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <h5>
+    As we can see, an <code>Integrator</code> is something that owns a <code>RHS</code> object (to be defined), along with a desired timestep and final integration time.
+    It also must implement the method <code>Integrator::solve(x0,param)</code>, which maps a given initial condition <code>x0</code> and dictionary of parameter key-value pairs <code>param</code> to a matrix containing the solution in time.
+    And that's it. Perhaps the take-away of this section is how minimal the requirements are for what an <code>Integrator</code> must do. 
+    Again, these are implementation details and so are someone else's problem to worry about.
+  </h5>
+
+  <h5>
+    We'll finish here by giving one concrete example implementation of <code>Integrator</code> (for forward Euler):
+  </h5>
+
+  <div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+      <div class="box">
+        <pre>
+          <code class="language-python">
+            class Forward_Euler( Integrator ):
+
+                def solve( self , 
+                          x0 : np.ndarray , 
+                          param : Dict[ str , float ] ) -> np.ndarray:
+            
+                    x      = np.zeros( ( len(x0) , self._n ) )
+                    x[:,0] = x0
+            
+                    for i in range( self._n-1 ):
+                        x[:,i+1] = x[:,i] + self._dt * self._rhs( x[:,i] , param )
+            
+                    return x
+          </code>
+        </pre>
+      </div>
+    </div>
+  </div>
+      
+  
+
+  </div>
+</div>
 
 <!-- Footer -->
 <footer class="w3-container w3-padding-64 w3-center w3-opacity">  
