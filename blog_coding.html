@@ -231,7 +231,7 @@ table {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h3>Separating interface from implementation</h3>
+      <h3>Refactoring: reducing dependencies</h3>
       <h5>
         The biggest obstacle to fulfilling the request of your client <code>&#8212;</code> who has a strange affinity for toy dynamical systems, it would seem <code>&#8212;</code> is that the code which implements the time integrator is completely entangled with the code that implements the right-hand side.
         This makes it impossible to implement a new right-hand side (Duffing) and "plug it into" your time integrator (e.g., RK4) without either (1) destroying the code you already wrote and replacing it, or (2) duplicating code for the integrator, along with a horror show of even more kludgy "if-else" conditionals to mediate which right-hand side is integrated.
