@@ -3,7 +3,7 @@
 <head>
   <link href="prism.css" rel="stylesheet" />
 </head>
-<title>Coding Blog Post | Anthony M. DeGennaro</title>
+<title>Blog: coding | Anthony M. DeGennaro</title>
 <meta name="description" content="Research">
 <meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -80,11 +80,12 @@ table {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h1>Software design principles</h1>
+      <h1>Software design: interfaces</h1>
       <h5>  
         Today we are going to talk about software: what to do, what not to do, and why it matters.
         This falls squarely in the category of "stuff I wish someone had pointed out earlier, that way I wouldn't have had to learn it the hard way."
         To cut to the chase: this'll mostly be about <em>interfaces</em>, and how to design them to make your code maintainable, usable, and extensible.
+        I'll be working with examples in Python, but the core ideas are more or less language-independent.
       </h5>
       <h5>
         I've found that not everyone is entirely convinced that this stuff is important, so I want to spend some time up-front addressing that.
@@ -112,7 +113,7 @@ table {
       </h5>
       <h5>
         I don't need to belabor the point (said everyone who has ever belabored the point, as I will now do).
-        But the take-home is this. If you're doing something very complicated, and if there are people who would like to use what you are doing in an accessible way, great; that means it's important! But in that case, if you don't pay attention to proper software design, what you're doing is, you're creating a giant maze, and you're plunking your users (and likely also <em>yourself</em>) right down in the middle of it, with no food, no water and certainly no signposts on how to get out. You might make <a href="https://www.kafka-online.info/an-imperial-message.html">Franz Kafka</a> proud, but that's an issue of literary aesthetics, not useful engineering. Don't be that guy.
+        But the take-home is this. If you're doing something very complicated, and if there are people who would like to use what you are doing in an accessible way, great; that means it's important! And in that case, if you don't pay attention to proper software design, what you're doing is, you're creating a giant maze, and you're plunking your users (and likely also <em>yourself</em>) right down in the middle of it, with no food, no water and certainly no signposts on how to get out. You might make <a href="https://www.kafka-online.info/an-imperial-message.html">Franz Kafka</a> proud, but that's an issue of literary aesthetics, not useful engineering.
       </h5>
       <h5>
         And with that fully belabored, let's get on with it.
@@ -238,7 +239,7 @@ table {
       </h5>
       <h5>
         The solution here is twofold: first, we need to <em>separate</em> the right-hand side from the integrator; doing so will make it much easier to implement new right-hand sides while leaving the integrator code unchanged.
-        Of course, these are not completely independent concepts -- after all, a time integrator exists to integrate a right-hand side.
+        Of course, these are not completely independent concepts <code>&#8212;</code> after all, a time integrator exists to integrate a right-hand side.
         Recognizing this leads to the second part of the solution: we should link the integrator and right-hand side objects together through <em>composition</em>, which will allow us to implement the loose dependencies we are looking for.
       </h5>
       <h5>
@@ -297,7 +298,7 @@ table {
   </div>
 
     <h5>
-      It should be pretty obvious why this is preferable: it's shorter and much easier to understand.
+      One thing that immediately jumps out when comparing this code with the other is that this version is shorter and much easier to understand.
       Why is that? For two reasons: one, as we've already discussed, we've disentangled the right-hand side and time integrator; they are now distinct pieces of code.
       But the biggest reason this is easier on the eyes is because we've <em>hidden the implementation details</em>.
       Remember that this is just the highest level code: nowhere does it say here <em>how</em> <code>Lorenz</code> or <code>Forward_Euler</code> actually work.
@@ -438,7 +439,60 @@ table {
         </div>
       </div>
 
+      <h5>
+        Here's one example implementation of <code>RHS</code>:
+      </h5>
 
+      <div class="w3-row-padding w3-padding-64 w3-container">
+        <div class="w3-content">
+          <div class="box">
+            <pre>
+              <code class="language-python">
+                class Lorenz( RHS ):
+
+                    def __call__( self , 
+                                  x : np.ndarray ) -> np.ndarray:
+                        
+                        """
+                        inputs
+                            x : initial state
+
+                        example : 
+                            >>> params = { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 }
+                            >>> rhs    = Lorenz( params )
+                            >>> x0     = np.array( [1,1,1] )
+                            >>> dxdt   = rhs( x0 )
+                        """
+
+                        f_x = self._param['sigma'] * ( x[1] - x[0] )
+                        f_y = x[0] * ( self._param['rho'] - x[2] ) - x[1]
+                        f_z = x[0] * x[1] - self._param['beta'] * x[2]
+                        
+                        return np.array( [ f_x , f_y , f_z ] )
+              </code>
+            </pre>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Parting thoughts</h3>
+      <h5>
+        Hopefully it should be clear now why the second approach is preferable to the initial one: recall our hypothetical client's request of <em>extending</em> the code's functionality to cover a brand new use case (i.e., a new right-hand side).
+        Previously, this was not possible without taking a sledgehammer to everything we'd done, since the code for our time integrator was tightly coupled to the code for the right-hand side.
+        Now, we've largely decoupled those two things.
+        Extending the functionality of either the right-hand side or the time integrator is now a process that is easy to do without one affecting the other, and moreover, there are clear guidelines (through inheritance) on how to do these things.
+      </h5>
+      <h5>
+        Another thing to consider: the same decoupling that made this code easier to extend has also made it much better from the standpoint of <em>test coverage</em>.
+        If you were to encounter bugs in running the first version of the code, it might not be immediately clear whether those errors stemmed from an problem with the time integrator, or with the right-hand side (or both).
+        Now, because these are separate objects, it is possible to write unit tests to verify the functionality of both, independently.
+      </h5>
   </div>
 </div>
 
