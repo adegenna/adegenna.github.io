@@ -279,11 +279,12 @@ th {
       \[ X_0 = \lbrace \mathbf{x}_1 , \dots , \mathbf{x}_k \rbrace \;\; , \;\; F_0 = \lbrace f(\mathbf{x}_1) , \dots , f(\mathbf{x}_k) \rbrace\]
       The surrogate we construct is a particular type of stochastic process, called a <em>Gaussian process</em> (GP).
       When using a GP, we make the assumption that probability that we observed the outputs \(F_0\) at inputs \(X_0\) is normally-distributed about a pre-specified mean function, \(m(\mathbf{x})\), and covariance function or <em>kernel</em>, \(\sigma(\mathbf{x},\mathbf{x}')\):
-      \[ p(F_0|X_0) = \text{Normal}( F_0 | \mu_0 , \Sigma_0 ) \]
-      Here, \(\mu_0 = [ m(\mathbf{x}_1) , \dots , m(\mathbf{x}_k) ]\), and \([\Sigma_0]_{i,j} = \sigma(\mathbf{x}_i , \mathbf{x}_j)\).
-      In order to interpolate/extrapolate, one can derive a posterior prediction at an unseen data point \(\mathbf{x}_{\text{new}}\) from this, i.e. \( p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) \), which will again be normally-distributed, but with updated mean/covariance:
-      \[ p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) = \text{Normal}( f_{\text{new}} | \mu_{\text{new}} , \Sigma_{\text{new}} )\]
-      I don't want to go too far into the weeds, so I'm going to omit the details of how one may compute the updates \(\mu_{\text{new}} , \Sigma_{\text{new}}\).
+      \[ p(F_0|X_0) = \text{Normal}( F_0 | \boldsymbol{\mu_0} , \Sigma_0 ) \]
+      Here, \(\boldsymbol{\mu_0} = [ m(\mathbf{x}_1) , \dots , m(\mathbf{x}_k) ]\) is the vector of mean evaluations at the data points, and \([\Sigma_0]_{i,j} = \sigma(\mathbf{x}_i , \mathbf{x}_j)\) is the data covariance matrix.
+      In order to interpolate/extrapolate, one can derive from this a posterior prediction at an unseen data point \(\mathbf{x}_{\text{new}}\), i.e. \( p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) \), which will again be normally-distributed:
+      \[ p(f_{\text{new}}|\mathbf{x}_{\text{new}},X_0,F_0) = \text{Normal}( f_{\text{new}} | \mu_{\text{new}} , \sigma_{\text{new}} )\]
+      Here, \(\mu_{\text{new}}\) and \(\sigma_{\text{new}}\) are simply posterior estimates of the mean and variance at point \(\mathbf{x}_{\text{new}}\).
+      I don't want to go too far into the weeds, so I'm going to omit the details of how one may compute these quantities.
       But the bottom-line is this: with some sample points, we can construct a GP surrogate from that data that approximates function values everywhere in parameter space, <em>and</em> provides uncertainty estimates at those locations.
       As we collect more data points, this GP model can be updated, giving a (hopefully better) estimate of the true function \(f(\mathbf{x})\).
       </h5>
