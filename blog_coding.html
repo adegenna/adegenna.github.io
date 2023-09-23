@@ -140,80 +140,80 @@ table {
       <div class="box">
         <pre>
           <code class="language-python">
-            import numpy as np
-            import matplotlib.pyplot as plt
-            from mpl_toolkits import mplot3d
-            
-            t      = np.linspace( 0 , 10 , 1000 )
-            integration_type = 'forward_euler'
-            
-            dt     = t[1] - t[0]
-            X , P  = [] , []
-            params = [ 10 , 28 , 8./3 ] # sigma , rho , beta
-            x0     = np.random.uniform( [ 0.5 , 0.5 , 0.5 ] )
-            
-            x      = np.zeros( [ len(x0) , len(t) ] )
-            x[:,0] = x0
-            
-            if integration_type == 'forward_euler':
-            
-                for i in range(len(t)-1):
-                    
-                    x[0,i+1] = x[0,i] + dt * ( params[0] * ( x[1,i] - x[0,i] ) )
-                    x[1,i+1] = x[1,i] + dt * ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
-                    x[2,i+1] = x[2,i] + dt * ( x[0,i] * x[1,i] - params[2] * x[2,i] )
-            
-            elif integration_type == 'adams_bashforth':
-            
-                for i in range(len(t)-1):
-                    
-                    f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
-                    f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
-                    f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
-            
-                    f_xyz = np.array( [ f_x , f_y , f_z ] )
-            
-                    xyz_pred = x[:,i] + dt * f_xyz
-            
-                    f_xPred = ( params[0] * ( xyz_pred[1] - xyz_pred[0] ) )
-                    f_yPred = ( xyz_pred[0] * ( params[1] - xyz_pred[2] ) - xyz_pred[1] )
-                    f_zPred = ( xyz_pred[0] * xyz_pred[1] - params[2] * xyz_pred[2] )
-            
-                    f_xyzPred = np.array( [ f_xPred , f_yPred , f_zPred ] )
-            
-                    x[:,i+1] = xyz_pred + 1.5 * dt * f_xyzPred - 0.5 * dt * f_xyz
-            
-            elif integration_type == 'rk4':
-            
-                for i in range(len(t)-1):
-            
-                    f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
-                    f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
-                    f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
-                    k1 = np.array( [ f_x , f_y , f_z ] )
-            
-                    f_x_k2 = ( params[0] * ( ( x[1,i] + dt/2 * k1[1] ) - ( x[0,i] + dt/2 * k1[0] ) ) )
-                    f_y_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( params[1] - ( x[2,i] + dt/2 * k1[2] ) ) - ( x[1,i] + dt/2 * k1[1] ) )
-                    f_z_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( x[1,i] + dt/2 * k1[1] ) - params[2] * ( x[2,i] + dt/2 * k1[2] ) )
-                    k2 = np.array( [ f_x_k2 , f_y_k2 , f_z_k2 ] )
-            
-                    f_x_k3 = ( params[0] * ( ( x[1,i] + dt/2 * k2[1] ) - ( x[0,i] + dt/2 * k2[0] ) ) )
-                    f_y_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( params[1] - ( x[2,i] + dt/2 * k2[2] ) ) - ( x[1,i] + dt/2 * k2[1] ) )
-                    f_z_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( x[1,i] + dt/2 * k2[1] ) - params[2] * ( x[2,i] + dt/2 * k2[2] ) )
-                    k3 = np.array( [ f_x_k3 , f_y_k3 , f_z_k3 ] )
-            
-                    f_x_k4 = ( params[0] * ( ( x[1,i] + dt/2 * k3[1] ) - ( x[0,i] + dt/2 * k3[0] ) ) )
-                    f_y_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( params[1] - ( x[2,i] + dt/2 * k3[2] ) ) - ( x[1,i] + dt/2 * k3[1] ) )
-                    f_z_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( x[1,i] + dt/2 * k3[1] ) - params[2] * ( x[2,i] + dt/2 * k3[2] ) )
-                    k4 = np.array( [ f_x_k4 , f_y_k4 , f_z_k4 ] )
-            
-                    x[:,i+1] = x[:,i] + 1./6 * dt * ( k1 + 2*k2 + 2*k3 + k4 )
-                
-            
-            fig = plt.figure()
-            ax  = fig.add_subplot( projection='3d' )
-            ax.plot3D( x[0] , x[1] , x[2] )
-            plt.show()
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+
+t      = np.linspace( 0 , 10 , 1000 )
+integration_type = 'forward_euler'
+
+dt     = t[1] - t[0]
+X , P  = [] , []
+params = [ 10 , 28 , 8./3 ] # sigma , rho , beta
+x0     = np.random.uniform( [ 0.5 , 0.5 , 0.5 ] )
+
+x      = np.zeros( [ len(x0) , len(t) ] )
+x[:,0] = x0
+
+if integration_type == 'forward_euler':
+
+    for i in range(len(t)-1):
+        
+        x[0,i+1] = x[0,i] + dt * ( params[0] * ( x[1,i] - x[0,i] ) )
+        x[1,i+1] = x[1,i] + dt * ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+        x[2,i+1] = x[2,i] + dt * ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+
+elif integration_type == 'adams_bashforth':
+
+    for i in range(len(t)-1):
+        
+        f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
+        f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+        f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+
+        f_xyz = np.array( [ f_x , f_y , f_z ] )
+
+        xyz_pred = x[:,i] + dt * f_xyz
+
+        f_xPred = ( params[0] * ( xyz_pred[1] - xyz_pred[0] ) )
+        f_yPred = ( xyz_pred[0] * ( params[1] - xyz_pred[2] ) - xyz_pred[1] )
+        f_zPred = ( xyz_pred[0] * xyz_pred[1] - params[2] * xyz_pred[2] )
+
+        f_xyzPred = np.array( [ f_xPred , f_yPred , f_zPred ] )
+
+        x[:,i+1] = xyz_pred + 1.5 * dt * f_xyzPred - 0.5 * dt * f_xyz
+
+elif integration_type == 'rk4':
+
+    for i in range(len(t)-1):
+
+        f_x = ( params[0] * ( x[1,i] - x[0,i] ) )
+        f_y = ( x[0,i] * ( params[1] - x[2,i] ) - x[1,i] )
+        f_z = ( x[0,i] * x[1,i] - params[2] * x[2,i] )
+        k1 = np.array( [ f_x , f_y , f_z ] )
+
+        f_x_k2 = ( params[0] * ( ( x[1,i] + dt/2 * k1[1] ) - ( x[0,i] + dt/2 * k1[0] ) ) )
+        f_y_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( params[1] - ( x[2,i] + dt/2 * k1[2] ) ) - ( x[1,i] + dt/2 * k1[1] ) )
+        f_z_k2 = ( ( x[0,i] + dt/2 * k1[0] ) * ( x[1,i] + dt/2 * k1[1] ) - params[2] * ( x[2,i] + dt/2 * k1[2] ) )
+        k2 = np.array( [ f_x_k2 , f_y_k2 , f_z_k2 ] )
+
+        f_x_k3 = ( params[0] * ( ( x[1,i] + dt/2 * k2[1] ) - ( x[0,i] + dt/2 * k2[0] ) ) )
+        f_y_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( params[1] - ( x[2,i] + dt/2 * k2[2] ) ) - ( x[1,i] + dt/2 * k2[1] ) )
+        f_z_k3 = ( ( x[0,i] + dt/2 * k2[0] ) * ( x[1,i] + dt/2 * k2[1] ) - params[2] * ( x[2,i] + dt/2 * k2[2] ) )
+        k3 = np.array( [ f_x_k3 , f_y_k3 , f_z_k3 ] )
+
+        f_x_k4 = ( params[0] * ( ( x[1,i] + dt/2 * k3[1] ) - ( x[0,i] + dt/2 * k3[0] ) ) )
+        f_y_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( params[1] - ( x[2,i] + dt/2 * k3[2] ) ) - ( x[1,i] + dt/2 * k3[1] ) )
+        f_z_k4 = ( ( x[0,i] + dt/2 * k3[0] ) * ( x[1,i] + dt/2 * k3[1] ) - params[2] * ( x[2,i] + dt/2 * k3[2] ) )
+        k4 = np.array( [ f_x_k4 , f_y_k4 , f_z_k4 ] )
+
+        x[:,i+1] = x[:,i] + 1./6 * dt * ( k1 + 2*k2 + 2*k3 + k4 )
+    
+
+fig = plt.figure()
+ax  = fig.add_subplot( projection='3d' )
+ax.plot3D( x[0] , x[1] , x[2] )
+plt.show()
           </code>
         </pre>
       </div>
@@ -250,10 +250,10 @@ table {
           <div class="box">
             <pre>
               <code class="language-python">
-                # make the RHS object first, with the parameters needed to define it
-                rhs        = Lorenz( { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 } )
-                # integrator is composed of a rhs (and possibly other things)
-                integrator = Forward_Euler( rhs , [ possibly other args ] )
+# make the RHS object first, with the parameters needed to define it
+rhs        = Lorenz( { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 } )
+# integrator is composed of a rhs (and possibly other things)
+integrator = Forward_Euler( rhs , [ possibly other args ] )
               </code>
             </pre>
           </div>
@@ -277,20 +277,20 @@ table {
           <div class="box">
             <pre>
           <code class="language-python">
-            import numpy as np
-            import matplotlib.pyplot as plt
-            from mpl_toolkits import mplot3d
-            from integrator import *
-            from ode_rhs import *
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+from integrator import *
+from ode_rhs import *
 
-            rhs        = Lorenz( { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 } )
-            integrator = Forward_Euler( rhs , dt=0.01 , t_steps=1000 )
-            x          = integrator.solve( np.array( [ 0.5 , 0.5 , 0.5 ] ) )
-            
-            fig = plt.figure()
-            ax  = fig.add_subplot( projection='3d' )
-            ax.plot3D( x[0] , x[1] , x[2] )
-            plt.show()
+rhs        = Lorenz( { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 } )
+integrator = Forward_Euler( rhs , dt=0.01 , t_steps=1000 )
+x          = integrator.solve( np.array( [ 0.5 , 0.5 , 0.5 ] ) )
+
+fig = plt.figure()
+ax  = fig.add_subplot( projection='3d' )
+ax.plot3D( x[0] , x[1] , x[2] )
+plt.show()
           </code>
         </pre>
       </div>
@@ -326,40 +326,40 @@ table {
           <div class="box">
             <pre>
           <code class="language-python">
-            class Integrator(ABC):
+class Integrator(ABC):
 
-                def __init__( self , 
-                              rhs : RHS , 
-                              dt : float , 
-                              t_steps : int ):
-                    
-                    """
-                    Base class for time integrators.
-            
-                    Args: 
-                        rhs: instance of RHS
-                        dt: float, desired (fixed) time-step
-                        t_steps: int, desired number of time-steps
-                    """
-            
-                    self._rhs  = rhs
-                    self._dt   = dt
-                    self._n    = t_steps
-            
-                @abstractmethod
-                def solve( self , 
-                           x0 : np.ndarray ) -> np.ndarray:
-                    
-                    """
-                    Integrate the ODE forward in time.
-                    
-                    Args:
-                        x0: np.ndarray, initial state values
-                    Returns:
-                        2-D numpy array of size (X,T) where X is state dimension and T is number of time steps
-                    """
-            
-                    pass            
+    def __init__( self , 
+                  rhs : RHS , 
+                  dt : float , 
+                  t_steps : int ):
+        
+        """
+        Base class for time integrators.
+
+        Args: 
+            rhs: instance of RHS
+            dt: float, desired (fixed) time-step
+            t_steps: int, desired number of time-steps
+        """
+
+        self._rhs  = rhs
+        self._dt   = dt
+        self._n    = t_steps
+
+    @abstractmethod
+    def solve( self , 
+                x0 : np.ndarray ) -> np.ndarray:
+        
+        """
+        Integrate the ODE forward in time.
+        
+        Args:
+            x0: np.ndarray, initial state values
+        Returns:
+            2-D numpy array of size (X,T) where X is state dimension and T is number of time steps
+        """
+
+        pass            
           </code>
         </pre>
       </div>
@@ -382,18 +382,18 @@ table {
       <div class="box">
         <pre>
           <code class="language-python">
-            class Forward_Euler( Integrator ):
+class Forward_Euler( Integrator ):
 
-                def solve( self , 
-                           x0 : np.ndarray ) -> np.ndarray:
-            
-                    x      = np.zeros( ( len(x0) , self._n ) )
-                    x[:,0] = x0
-            
-                    for i in range( self._n-1 ):
-                        x[:,i+1] = x[:,i] + self._dt * self._rhs( x[:,i] )
-            
-                    return x        
+    def solve( self , 
+                x0 : np.ndarray ) -> np.ndarray:
+
+        x      = np.zeros( ( len(x0) , self._n ) )
+        x[:,0] = x0
+
+        for i in range( self._n-1 ):
+            x[:,i+1] = x[:,i] + self._dt * self._rhs( x[:,i] )
+
+        return x        
           </code>
         </pre>
       </div>
@@ -416,23 +416,23 @@ table {
           <div class="box">
             <pre>
               <code class="language-python">
-                class RHS(ABC):
-                    """
-                    base class for a right-hand side
-                    """
+class RHS(ABC):
+    """
+    base class for a right-hand side
+    """
 
-                    def __init__( self , param : Dict[ str , float ] ):
-                        """
-                        inputs:
-                            param : dict mapping parameter names to values
-                        """
-                        self._param = param
+    def __init__( self , param : Dict[ str , float ] ):
+        """
+        inputs:
+            param : dict mapping parameter names to values
+        """
+        self._param = param
 
-                    @abstractmethod
-                    def __call__( self , 
-                                  x : np.ndarray ) -> np.ndarray:
+    @abstractmethod
+    def __call__( self , 
+                  x : np.ndarray ) -> np.ndarray:
 
-                        pass
+        pass
               </code>
             </pre>
           </div>
@@ -448,27 +448,27 @@ table {
           <div class="box">
             <pre>
               <code class="language-python">
-                class Lorenz( RHS ):
+class Lorenz( RHS ):
 
-                    def __call__( self , 
-                                  x : np.ndarray ) -> np.ndarray:
-                        
-                        """
-                        inputs
-                            x : initial state
+    def __call__( self , 
+                  x : np.ndarray ) -> np.ndarray:
+        
+        """
+        inputs
+            x : initial state
 
-                        example : 
-                            >>> params = { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 }
-                            >>> rhs    = Lorenz( params )
-                            >>> x0     = np.array( [1,1,1] )
-                            >>> dxdt   = rhs( x0 )
-                        """
+        example : 
+            >>> params = { "sigma" : 10 , "rho" : 28 , "beta" : 8./3 }
+            >>> rhs    = Lorenz( params )
+            >>> x0     = np.array( [1,1,1] )
+            >>> dxdt   = rhs( x0 )
+        """
 
-                        f_x = self._param['sigma'] * ( x[1] - x[0] )
-                        f_y = x[0] * ( self._param['rho'] - x[2] ) - x[1]
-                        f_z = x[0] * x[1] - self._param['beta'] * x[2]
-                        
-                        return np.array( [ f_x , f_y , f_z ] )
+        f_x = self._param['sigma'] * ( x[1] - x[0] )
+        f_y = x[0] * ( self._param['rho'] - x[2] ) - x[1]
+        f_z = x[0] * x[1] - self._param['beta'] * x[2]
+        
+        return np.array( [ f_x , f_y , f_z ] )
               </code>
             </pre>
           </div>
