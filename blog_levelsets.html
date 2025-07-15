@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="prism.css" rel="stylesheet" />
+</head>
+<title>Blog: shape inference with level sets | Anthony M. DeGennaro</title>
+<meta name="description" content="Research">
+<meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
+.fa-coffee {font-size:200px}
+hr {
+  margin-top: 0.01em;
+  margin-bottom: 0.01em;
+  border-width: 10px;
+}
+header {
+  background-image: url("images/research.png");
+  background-size: 871px 256px;
+  max-width: 871px;
+  margin: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: None;
+  margin-top: 0px;
+  font-family: "Lato", sans-serif;
+}
+.codebox {
+  /* Below are styles for the codebox (not the code itself) */
+  border:1px solid black;
+  background-color:#EEEEFF;
+  width:300px;
+  overflow:auto;    
+  padding:10px;
+}
+.codebox code {
+  /* Styles in here affect the text of the codebox */
+  font-size:0.9em;
+  /* You could also put all sorts of styling here, like different font, color, underline, etc. for the code. */
+}
+</style>
+<script src="prism.js"></script>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+  <ul class="w3-navbar w3-black w3-card-2 w3-left-align w3-large" style="background-color:#204e87">
+    <li class="w3-hide-medium w3-hide-large w3-opennav w3-right">
+      <a class="w3-padding-large w3-hover-white w3-large w3-black" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    </li>
+    <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
+    <li class="w3-hide-small"><a href="research.html" class="w3-padding-large w3-hover-white">Research</a></li>
+    <li class="w3-hide-small"><a href="blog.html" class="w3-padding-large w3-hover-white">Blog</a></li>
+    <li class="w3-hide-small"><a href="programs.html" class="w3-padding-large w3-hover-white">Programming Projects</a></li>
+    <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Art and Writing</a></li>
+  </ul>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-hide w3-hide-large w3-hide-medium">
+    <ul class="w3-navbar w3-left-align w3-large w3-black">
+      <li><a class="w3-padding-large" href="research.html">Research</a></li>
+      <li><a class="w3-padding-large" href="blog.html">Blog</a></li>
+      <li><a class="w3-padding-large" href="programs.html">Programming Projects</a></li>
+      <li><a class="w3-padding-large" href="art.html">Art and Writing</a></li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h1>Shape inference with level sets</h1>
+      <h5>  
+        Let's imagine there's a giant mass of bad stuff out in the ocean somewhere. 
+        In fact, we don't have to strain our imagination, really; it could be a <a href="https://en.wikipedia.org/wiki/Deepwater_Horizon_oil_spill">catastrophic oil spill</a>.
+        Or, it could be a <a href="https://en.wikipedia.org/wiki/Great_Pacific_Garbage_Patch">floating hulk of crap</a>.
+      </h5>
+      <h5>
+        Your goal is to figure out what this thing looks like; more precisely, you want to map out the topology of its boundary in some 2D, aerial view.
+        In order to do this, a fleet of boats are dispatched to a bunch of locations in the general area where you think the boundary likely is located.
+        Each of these boats takes a local measurement of the average concentration of oil (or trash, or whatever other horrible thing) at a fixed location near that boundary.
+        So, you have access to <em>n</em> tuples:
+      </h5>
+      \[ (x_i,y_i,c_i) \;\;\; \text{for} \;\;\; i = 1 \dots n \]
+      <h5>
+        where \(c_i\) is just the average concentration measured at location \((x_i,y_i)\).
+      </h5>
+      <h5>
+        In this post, I want to walk you through how you can use a <a href="https://en.wikipedia.org/wiki/Level-set_method">level set method</a> to map out the boundary.
+        It's a really satisfying approach that blends the modern emphasis on data-driven learning with a strong grounding in theory.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Problem setup: the oil spill</h3>
+      <h5>
+        Here's what we're facing, in a picture:
+      </h5>
+          <table>
+            <tr>
+              <td style='text-align:center;'> 
+              <figure>
+                <img src="images/oil_spill_1.png" style='width:50%'/>
+                <figcaption class="figure-caption text-center"><b>Oil spill (blue) along with point sensor measurements. The oil spill shape (blue) is, of course, presently unknown. Each sensor reports a local average (within the dashed circles) of the oil concentration. The darker the orange, the higher the average local concentration.</b></figcaption>
+              </figure>
+            </td>  
+          </tr>
+        </table>
+      <h5>
+        Each of the sensors represents a boat that goes out into the ocean and takes a local measurement of the oil concentration at a fixed point somewhere near the boundary.
+        In our model problem, we represent that local average as a convolution of the concentration field with a Gaussian of small width:
+      </h5>
+        \[ c_i = \int_X c(\mathbf{x}) G_{\sigma}(\| \mathbf{x} - \mathbf{x_i} \|) d\mathbf{x} \]
+      <h5>
+        where \( c(\mathbf{x}) \) is the oil spill concentration. 
+        For simplicity, we take that to be a binary field: it's either equal to 1 (if you're within the oil spill boundary), or 0 otherwise.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Describing a spatial region with function level sets</h3>
+      <h5>
+        In a blog post about using level set methods to solve a problem in oil spills, the most natural place to start is to connect the oil spill region to the concept of level sets of a function.
+        This is easier than it may sound: you simply <em>define</em> the oil spill region to be that region of space where some (unknown) function is negative: 
+      </h5>
+        \[ \mathcal{D} = \lbrace (x,y) \in \Omega : \phi(x,y) < 0 \rbrace \]
+      <h5>
+        The idea here is that there is <em>some</em> function out there -- which we don't yet know, but could potentially learn -- whose topology could match that of the oil spill mass.
+      </h5>
+          <table>
+            <tr>
+              <td style='text-align:center;'> 
+              <figure>
+                <img src="images/level_set_3d.png" style='width:50%'/>
+                <figcaption class="figure-caption text-center"><b>Defining a 2D region using level sets of a function. In this example, we're defining a circular region as those (x,y) pairs for which the displayed quadratic function is negative. Also clear from this is how the zero level set determines the region's boundary.</b></figcaption>
+              </figure>
+            </td>  
+          </tr>
+        </table>
+      <h5>
+        Although this is already a perfectly valid mathematical definition of the region of interest, it'll be convenient to us later on if we could describe \( \mathcal{D} \) in terms of a smooth, differentiable function.
+        We know that the boundary is essentially determined by the zero level set of \(\phi(\mathbf{x})\), so we can build this using a smooth function that changes value quickly around zero:
+      </h5>
+      \[ \mathcal{I}( \phi(\mathbf{x}) ) = \frac{1}{2} \left( 1 + \frac{2}{\pi}\text{atan}\left(-\frac{1}{\epsilon} \phi(\mathbf{x}) \right) \right) \]
+      <h5>
+        with \( \epsilon \ll 0 \). 
+        It's a bit ugly, but the point here is simple: \( \mathcal{I}( \phi(\mathbf{x}) ) \) is 1 for points \( \mathbf{x} \in \mathcal{D} \) and zero otherwise, except for a small, thin strip around the boundary, where it smoothly transitions in value between 0 and 1.
+        \( \mathcal{I}(\mathbf{x}) \) is essentially a smoothed one-indicator function, indicating whether or not a given spatial location is within \( \mathcal{D} \).
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Making an initial guess, and refining it</h3>
+      <h5>
+        Recall that our observed data represents a local spatial average of the concentration. 
+        Assume also that we have an initial estimate for \( \phi(\mathbf{x}) \), which we'll call \( \phi^*(\mathbf{x}) \).
+        With that in hand, we can estimate the local average concentration at any spatial location:
+      </h5>
+      \[ c_i \approx \int_X \mathcal{I}(\phi^*(\mathbf{x})) G_{\sigma}(\| \mathbf{x} - \mathbf{x_i} \|) d\mathbf{x} \]
+      <h5>
+        To make a cost functional, we can average this over all sensor locations:
+      </h5>
+      \[ J(\phi^*(\mathbf{x})) = \frac{1}{2} \sum_i\left( \int_X \mathcal{I}(\phi^*(\mathbf{x})) G_{\sigma}(\| \mathbf{x} - \mathbf{x_i} \|) d\mathbf{x} - c_i \right)^2 \]
+      <h5>
+        Now we get to the heart of the method, which is to evolve \( \phi^*(x) \) using the gradient flow of the cost functional:
+      </h5>
+      \[ \frac{\partial \phi^*}{\partial t}(\mathbf{x},t) = -\eta \frac{d J}{d \phi}(\mathbf{x}) \]
+      <h5>
+        This in effect defines a gradient descent system for us to iterate to convergence:
+      </h5>
+      \[ \phi^*(\mathbf{x}) \mapsto \phi^*(\mathbf{x}) - \eta \frac{d J}{d \phi}(\mathbf{x}) \]
+      <h5>
+        where the right-hand-side \( \frac{dJ}{d\phi} \) can be computed by the chain rule.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Simulation of the system</h3>
+      <h5>
+        Now we get to look at some pretty graphics showing how all of this shakes out.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/complicated.gif" alt="Oil spill simulation" style="width:70%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Simulation showing the evolution of an approximation of the oil spill region, based on sensor measurements.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+  </div>
+</div>
+
+
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+  <div class="w3-xlarge w3-padding-32">
+   <a href="https://www.linkedin.com/in/anthony-degennaro-69b272123/" class="w3-hover-text-indigo"><i class="fa fa-linkedin"></i></a>
+ </div>
+ <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+</footer>
+
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else { 
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+
+</body>
+</html>
