@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="prism.css" rel="stylesheet" />
+</head>
+<title>Blog: shape inference with level sets | Anthony M. DeGennaro</title>
+<meta name="description" content="Research">
+<meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+body,h1,h2,h3,h4,h5,h6,.w3-navbar,h1,button {font-family: "Lato", sans-serif}
+.fa-coffee {font-size:200px}
+hr {
+  margin-top: 0.01em;
+  margin-bottom: 0.01em;
+  border-width: 10px;
+}
+header {
+  background-image: url("images/research.png");
+  background-size: 871px 256px;
+  max-width: 871px;
+  margin: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: None;
+  margin-top: 0px;
+  font-family: "Lato", sans-serif;
+}
+.codebox {
+  /* Below are styles for the codebox (not the code itself) */
+  border:1px solid black;
+  background-color:#EEEEFF;
+  width:300px;
+  overflow:auto;    
+  padding:10px;
+}
+.codebox code {
+  /* Styles in here affect the text of the codebox */
+  font-size:0.9em;
+  /* You could also put all sorts of styling here, like different font, color, underline, etc. for the code. */
+}
+</style>
+<script src="prism.js"></script>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+  <ul class="w3-navbar w3-black w3-card-2 w3-left-align w3-large" style="background-color:#204e87">
+    <li class="w3-hide-medium w3-hide-large w3-opennav w3-right">
+      <a class="w3-padding-large w3-hover-white w3-large w3-black" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    </li>
+    <li><a href="index.html" class="w3-padding-large w3-white">Anthony M. DeGennaro</a></li>
+    <li class="w3-hide-small"><a href="research.html" class="w3-padding-large w3-hover-white">Research</a></li>
+    <li class="w3-hide-small"><a href="blog.html" class="w3-padding-large w3-hover-white">Blog</a></li>
+    <li class="w3-hide-small"><a href="programs.html" class="w3-padding-large w3-hover-white">Programming Projects</a></li>
+    <li class="w3-hide-small"><a href="art.html" class="w3-padding-large w3-hover-white">Art and Writing</a></li>
+  </ul>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-hide w3-hide-large w3-hide-medium">
+    <ul class="w3-navbar w3-left-align w3-large w3-black">
+      <li><a class="w3-padding-large" href="research.html">Research</a></li>
+      <li><a class="w3-padding-large" href="blog.html">Blog</a></li>
+      <li><a class="w3-padding-large" href="programs.html">Programming Projects</a></li>
+      <li><a class="w3-padding-large" href="art.html">Art and Writing</a></li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h1>Should I stay or should I go?</h1>
+      <h5>  
+        It's 1200 BC, and you're a nomad.
+        One fine day, you look around, and decide that where you live kind of sucks: it's dry and hot, and growing crops is hard.
+        But more importantly, you notice signs that things might be a bit better 30 miles or so away, where a line of tall trees stand out, making you suspect the presence of a river.
+        You and your tribe move there and discover that indeed, there is a river, and you settle down next to it.
+        For a time, life is much easier.
+      </h5>
+      <h5>
+        But soon, other dusty tribes from other corners of the surrounding desert begin to take notice as well.
+        They move in, which makes the area stand out even more prominently, which attracts even more outsiders.
+        Soon, the tiny river is swarming with nomad settlements; so many, in fact, that the river begins to get polluted, and the once lush surrounding land turns barren.
+        Ironically, this once fertile oasis has become a victim of its own fertility. 
+        This puts pressure on the nomads, some of whom leave, in search of the next best place.
+        Some of the less intrepid settlers, on the other hand, decide to stay, reasoning that the land will rebound after these recent departures.
+      </h5>
+      <h5>
+        And so, nomadic life is defined by this tension between stasis and movement. 
+        Ideally, we'd all like to remain comfortable where we are, but when times are hard and the land is unworkable, that's not an option.
+        In this post, I want to explore how we can model this sort of dynamic. 
+        We'll of course look at pretty pictures and videos, but I'm hoping to also shed some light on the mathematical structures that drive this process.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>The overall vision</h3>
+      <h5>
+        We want to build an <em>agent-based model</em>, i.e. a model where a discrete number of nomads (agents) move throughout space and interact with each other and with the local terrain in some way.
+        At any given moment in time, an agent will look at their surroundings and decide whether the land on which they're situated is good enough for them to settle or not.
+        If it is, then they'll stop wandering, settle in, and form a "village"; if not, they'll continue wandering in search of better land.
+        Here's where things get interesting: a village can degrade the quality of the land it sits on. 
+        If that land degrades enough, the nomad that settled in that village can decide to disband it and continue on wandering.
+        So, the dynamics evolve under two-way coupling: the terrain quality determines whether villages form, and the presence of villages determines the quality of the terrain.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Version 1: static terrain</h3>
+      <h5>
+        The dynamics of our model will unfold on a static, structured 2D spatial grid \( G = \lbrace (x_i,y_j) \rbrace \), where \( i = 1 \dots n_x \) and \( j = 1 \dots n_y \).
+        The <em>agents</em> will be described by their location on \(G\): \( A = \lbrace a_i \rbrace \; \text{for} \; i=1 \dots n_a \), where \( a_i \in G \).
+        <em>Villages</em> will also be characterized in this way: \( V = \lbrace v_i \rbrace \; \text{for} \; i=1 \dots n_v \), where \( v_i \in G \).
+        I'll be referring to \(a_i\) and \(v_i\) as both the agents/villages as entities and as their spatial locations interchangeably, so please excuse the slight abuse of notation.
+        The <em>terrain quality</em> \( T(x,y) : \mathbb{R}^2 \mapsto \mathbb{R} \) is a spatial field defined on \( G \).
+      </h5>
+      <h5>
+        With those basic definitions out of the way, let's talk about how the agents move about.
+        At any given moment in time, agent \(a_i\) evaluates the quality of their terrain \( T(a_i) \).
+        If \( T(a_i) \ge T^* \), then that agent "settles" to form a village.
+        Algorithmically, this means that we pop the location \( a_i \) off of the set \(A\) and append it to the set \(V\).
+        Otherwise, \( T(a_i) < T^* \), and the agent continues to wander.
+        This wandering is modeled as a random process: the agent randomly chooses one of the 8 grid locations that neighbor \(a_i\), call it \( a_i^* \).
+        If \( T(a_i^*) > T(a_i) \), then the agent moves to this "better" square; otherwise, it stays put with some probability.
+        If it so happens that the agent stumbles onto a pre-existing village, they will just automatically decide to settle there.
+      </h5>
+      <h5>
+        This is sufficient to define a "version 1" of our model; see below for an example simulation of it.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/nomads_1.gif" alt="nomads 1" style="width:40%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Version 1: evolution of nomads (<em>red</em>) towards forming villages (<em>blue</em>).</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+      <h5>
+        The terrain quality \( T(x,y) \) is represented in the inferno colorscale, with yellower colors being better.
+        The simulation is initialized with randomly placed agents, and these wander about.
+        We see the evolution of a long-term steady state: statistically speaking, the agents simply trace out the level set defined by \( T(x,y) = T^* \).
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Version 2: villages spawn new nomads</h3>
+      <h5>
+        The first addition we'll make is to allow villages to randomly spawn new agents with some probability.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/nomads_2.gif" alt="nomads 2" style="width:40%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Version 2: evolution of nomads (<em>red</em>) towards forming villages (<em>blue</em>). New nomads can spawn randomly adjacent to pre-existing villages.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+      <h5>
+        This looks pretty similar to the previous version; the only difference is that the steady state is now defined by \( T(x,y) \ge T^* \).
+        This is because of the new agents which spawn: previously, most of the villages were formed by agents who wandered progressively "uphill" toward yellower areas.
+        These agents would settle as soon as they hit a location with a desirability on the \( T^* \) threshold.
+        This still happens, but now, new agents can sometimes spawn at locations where \( T(x,y) > T^* \), which pushes the local front of villages "inward" until the entire blob of desirable terrain is occupied.
+      </h5>
+  </div>
+</div>
+<hr>
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Version 3: terrain degradation from village overpopulation</h3>
+      <h5>
+        The first addition we'll make is to allow villages to randomly spawn new agents with some probability.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/nomads_2.gif" alt="nomads 2" style="width:40%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Version 2: evolution of nomads (<em>red</em>) towards forming villages (<em>blue</em>). New nomads can spawn randomly adjacent to pre-existing villages.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+      <h5>
+        This looks pretty similar to the previous version; the only difference is that the steady state is now defined by \( T(x,y) \ge T^* \).
+        This is because of the new agents which spawn: previously, most of the villages were formed by agents who wandered progressively "uphill" toward yellower areas.
+        These agents would settle as soon as they hit a location with a desirability on the \( T^* \) threshold.
+        This still happens, but now, new agents can sometimes spawn at locations where \( T(x,y) > T^* \), which pushes the local front of villages "inward" until the entire blob of desirable terrain is occupied.
+      </h5>
+  </div>
+</div>
+<hr>
+
+
+
+
+
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Describing a spatial region with function level sets</h3>
+      <h5>
+        In a blog post about using level set methods to solve a problem in oil spills, the most natural place to start is to connect the oil spill region to the concept of level sets of a function.
+        This is easier than it may sound: you simply <em>define</em> the oil spill region to be that region of space where some (unknown) function is negative: 
+      </h5>
+        \[ \mathcal{D} = \lbrace (x,y) \in \Omega : \phi(x,y) < 0 \rbrace \]
+      <h5>
+        The idea here is that there is <em>some</em> function out there -- which we don't yet know, but could potentially learn -- whose topology could match that of the oil spill mass.
+      </h5>
+          <table>
+            <tr>
+              <td style='text-align:center;'> 
+              <figure>
+                <img src="images/level_set_3d.png" style='width:50%'/>
+                <figcaption class="figure-caption text-center"><b>Defining a 2D region using level sets of a function. In this example, we're defining a circular region as those (x,y) pairs for which the displayed quadratic function is negative. Also clear from this is how the zero level set determines the region's boundary.</b></figcaption>
+              </figure>
+            </td>  
+          </tr>
+        </table>
+      <h5>
+        Although this is already a perfectly valid mathematical definition of the region of interest, it'll be convenient to us later on if we could describe \( \mathcal{D} \) in terms of a smooth, differentiable function.
+        We know that the boundary is essentially determined by the zero level set of \(\phi(\mathbf{x})\), so we can build this using a smooth function that changes value quickly around zero:
+      </h5>
+      \[ \mathcal{I}( \phi(\mathbf{x}) ) = \frac{1}{2} \left( 1 + \frac{2}{\pi}\text{atan}\left(-\frac{1}{\epsilon} \phi(\mathbf{x}) \right) \right) \]
+      <h5>
+        with \( \epsilon \ll 0 \). 
+        It's a bit ugly, but the point here is simple: \( \mathcal{I}( \phi(\mathbf{x}) ) \) is 1 for points \( \mathbf{x} \in \mathcal{D} \) and zero otherwise, except for a small, thin strip around the boundary, where it smoothly transitions in value between 0 and 1.
+        \( \mathcal{I}(\mathbf{x}) \) is essentially a smoothed one-indicator function, indicating whether or not a given spatial location is within \( \mathcal{D} \).
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Making an initial guess, and refining it</h3>
+      <h5>
+        Recall that our observed data represents a local spatial average of the concentration. 
+        Assume also that we have an initial estimate for \( \phi(\mathbf{x}) \), which we'll call \( \phi^*(\mathbf{x}) \).
+        With that in hand, we can estimate the local average concentration at any spatial location:
+      </h5>
+      \[ c_i \approx \int_X \mathcal{I}(\phi^*(\mathbf{x})) G_{\sigma}(\| \mathbf{x} - \mathbf{x_i} \|) d\mathbf{x} \]
+      <h5>
+        To make a cost functional, we can average this over all sensor locations:
+      </h5>
+      \[ J(\phi^*(\mathbf{x})) = \frac{1}{2} \sum_i\left( \int_X \mathcal{I}(\phi^*(\mathbf{x})) G_{\sigma}(\| \mathbf{x} - \mathbf{x_i} \|) d\mathbf{x} - c_i \right)^2 \]
+      <h5>
+        Now we get to the heart of the method, which is to evolve \( \phi^*(x) \) using the gradient flow of the cost functional:
+      </h5>
+      \[ \frac{\partial \phi^*}{\partial t}(\mathbf{x},t) = -\eta \frac{d J}{d \phi}(\mathbf{x}) \]
+      <h5>
+        This in effect defines a gradient descent system for us to iterate to convergence:
+      </h5>
+      \[ \phi^*(\mathbf{x}) \mapsto \phi^*(\mathbf{x}) - \eta \frac{d J}{d \phi}(\mathbf{x}) \]
+      <h5>
+        where the right-hand-side \( \frac{dJ}{d\phi} \) can be computed by the chain rule.
+      </h5>
+  </div>
+</div>
+<hr>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Simulation of the system</h3>
+      <h5>
+        Now we get to look at some pretty graphics showing how all of this shakes out.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/complicated.gif" alt="Oil spill simulation" style="width:70%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Simulation showing the evolution of an approximation of the oil spill region, based on sensor measurements.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+      <h5>
+        Neat, huh? 
+        Notice how the accuracy of the inferred shape depends heavily on the local distribution of data:
+        a "boat" which straddles the boundary exactly carries more information than one that doesn't.
+        So, under resource constraints, the ideal distribution of sensors would be such that they'd all be placed somewhere along the boundary (though of course, we wouldn't know this <em>a-priori</em>, since that's what we're trying to learn in the first place).
+      </h5>
+  </div>
+</div>
+
+
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+  <div class="w3-xlarge w3-padding-32">
+   <a href="https://www.linkedin.com/in/anthony-degennaro-69b272123/" class="w3-hover-text-indigo"><i class="fa fa-linkedin"></i></a>
+ </div>
+ <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+</footer>
+
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else { 
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+
+</body>
+</html>
