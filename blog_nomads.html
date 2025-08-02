@@ -110,7 +110,7 @@ table {
   <div class="w3-content">
       <h3>The overall vision</h3>
       <h5>
-        We want to build an <em>agent-based model</em>, i.e. a model where a discrete number of nomads (agents) move throughout space and interact with each other and with the local terrain in some way.
+        We'll be building an <em>agent-based model</em>, i.e. a model where a discrete number of nomads (agents) move throughout space and interact with each other and with the local terrain in some way.
         At any given moment in time, an agent will look at their surroundings and decide whether the land on which they're situated is good enough for them to settle or not.
         If it is, then they'll stop wandering, settle in, and form a "village"; if not, they'll continue wandering in search of better land.
         Here's where things get interesting: a village can degrade the quality of the land it sits on. 
@@ -228,7 +228,7 @@ table {
         It turns out that the Gaussian kernel is formally the <em>Green's function</em> of the heat equation:
         \[ u_t = \nu \nabla^2 u \]
         A consequence of this is that the heat equation can be solved, given any initial condition, by convolution with a Gaussian kernel.
-        What this means for us is that there is a deep connection between the Gaussian kernel and the behavior of the heat equation.
+        What this means for us is that there will be a deep connection between the behavior of our agent-based system and that of the heat equation.
         We know that the heat equation produces very smooth solutions; sharp features are dulled down and everything sort of regresses to a global, boring average.
       </h5>
       <h5>
@@ -321,8 +321,24 @@ table {
 </div>
 <hr>
 
-
-
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Parting thoughts</h3>
+      <h5>
+        There's a lot here that I find fascinating.
+        Probably top of the list is the concept of <em>emergence</em>, and how complex, large scale behavior can self-organize from fairly simple rules at the small scales.
+        In these simulations, we see this manifest as the competition that evolves between the order-imposing ripple kernel and the diffusive kernel.
+        It's an interesting lesson in how sometimes, really beautiful behavior is the product of a fight between opposing forces.
+      </h5>
+      <h5>
+        Another prominent duality is stasis versus flow.
+        Clearly, all agents <em>want</em> to settle into a permanent village, but the very act of doing so depletes the resources on which their village stands, making it less stable over time. 
+        This is of course exacerbated by the fact that all agents want the same thing, which leads to overpopulation.
+        So you get a global population that is constantly going through cycles: for a stretch, things might seem pretty ordered and static, only to be followed by an equally long period of reshuffling and migration.
+        Nature seems to be playing with these poor nomads, who look like they're always just a couple steps behind it; always chasing the nearest shiny patch of land, only to have to start all over just as soon as they reach it. 
+      </h5>
+  </div>
+</div>
 
 
 <!-- Footer -->
