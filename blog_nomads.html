@@ -3,7 +3,7 @@
 <head>
   <link href="prism.css" rel="stylesheet" />
 </head>
-<title>Blog: shape inference with level sets | Anthony M. DeGennaro</title>
+<title>Blog: wandering nomads | Anthony M. DeGennaro</title>
 <meta name="description" content="Research">
 <meta name="keywords" content="uncertainty quantification, machine learning, scientific computing, low dimensional modeling,research">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -80,11 +80,11 @@ table {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h1>Should I stay or should I go?</h1>
+      <h1>Wandering nomads</h1>
       <h5>  
         It's 1200 BC, and you're a nomad.
-        One fine day, you look around, and decide that where you live kind of sucks: it's dry and hot, and growing crops is hard.
-        But more importantly, you notice signs that things might be a bit better 30 miles or so away, where a line of tall trees stand out, making you suspect the presence of a river.
+        One fine day, you look around, and decide that where you live kinda sucks: it's dry and hot, and growing crops is hard.
+        You squint your eyes on the horizon and notice signs that things might be a bit better 30 miles or so away, where a line of tall trees stand out, making you suspect the presence of a river.
         You and your tribe move there and discover that indeed, there is a river, and you settle down next to it.
         For a time, life is much easier.
       </h5>
@@ -130,6 +130,18 @@ table {
         <em>Villages</em> will also be characterized in this way: \( V = \lbrace \mathbf{v_i} \rbrace \; \text{for} \; i=1 \dots n_v \), where \( \mathbf{v_i} \in G \).
         The <em>terrain quality</em> \( T(x,y) : \mathbb{R}^2 \mapsto \mathbb{R} \) is a spatial field defined on \( G \).
       </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="images/agent_on_grid.png" alt="nomads 1" style="width:40%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Possible moves for an agent in a wandering state.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
       <h5>
         With those basic definitions out of the way, let's talk about how the agents move about.
         At any given moment in time, agent \(a_i\) evaluates the quality of their terrain \( T(\mathbf{a_i}) \).
@@ -200,7 +212,7 @@ table {
         Now we introduce a more interesting dynamic by coupling the terrain to the villages.
         The general idea is that if a local area is heavily populated with villages, then the resources should start to deplete and \( T(x,y) \) should decrease.
         We also allow for a resource-depleted area to regenerate over time, at a rate proportional to how depleted it is.
-        This gives the following general system:
+        This gives the following discrete time update rule for \( T(x,y) \):
         \[ T_{\mathbf{g_{ij}}} \mapsto T_{\mathbf{g_{ij}}} - c_1 f_d( V , \mathbf{g_{ij}} ) + c_2 ( 1 - T_{\mathbf{g_{ij}}} ) \]
       </h5>
       <h5>
@@ -209,9 +221,11 @@ table {
       <h5>
         There are several conceivable choices for the density function.
         One intuitive definition to consider is to average the number of villages in the vicinity of a grid point using a Gaussian weighting.
-        This choice introduces natural locality and smoothness to the estimated density field.
+        This choice is natural for estimating local properties since it places highest weight at central locations.
+        The density about a central point \( \mathbf{g_{ij}} \) can be estimated by simply "counting" the number of villages in the vicinity, weighting each of them by the Gaussian centered at \( \mathbf{g_{ij}} \).
         We can write this as:
         \[ f_d(V,\mathbf{g_{ij}}) = \int_{\mathbf{x}} \mathbb{1}_v(\mathbf{x}) \mathcal{N}_{\sigma}( \| \mathbf{x} - \mathbf{g_{ij}} \| ) d\mathbf{x} \]
+        where \( \mathbb{1}_v(\cdot) \) is the one-indicator function; it tells you whether or not a village is present at a given location.
         Notice this is the same as convolution with a kernel:
         \[ f_d(V,\mathbf{g_{ij}}) = ( \mathbb{1}_v \star k )(\mathbf{g_{ij}}) \]
         where, in this particular case, we've chosen the kernel to be Gaussian, i.e. \( k(\cdot) = \mathcal{N}_{\sigma}( \cdot ) \).
@@ -225,11 +239,11 @@ table {
         </h5>
       <h5>
         To answer that question, it helps to introduce a bit of math, and connect kernels to the theory of partial differential equations (PDEs).
-        It turns out that the Gaussian kernel is formally the <em>Green's function</em> of the heat equation:
+        It turns out that the Gaussian kernel is the <em>Green's function</em> of the heat equation:
         \[ u_t = \nu \nabla^2 u \]
         A consequence of this is that the heat equation can be solved, given any initial condition, by convolution with a Gaussian kernel.
         What this means for us is that there will be a deep connection between the behavior of our agent-based system and that of the heat equation.
-        We know that the heat equation produces very smooth solutions; sharp features are dulled down and everything sort of regresses to a global, boring average.
+        We know that the heat equation produces very smooth solutions: sharp features are dulled down and everything sort of regresses to a global, boring average.
       </h5>
       <h5>
         So, the kernel we chose smooths things out. 
@@ -239,17 +253,16 @@ table {
         \[ (\nabla^2 - w^2)u = \delta(\mathbf{x}) \]
         Instead of smoothing, this equation tends to produce sharply defined, resonant spatial wavelengths.
         Its Green's function can be approximated by cosine-ripple functions that look like this:
-        \[ k_h( \| \mathbf{x} - \mathbf{g_{ij}} \| ) = \text{cos}(w \| \mathbf{x} - \mathbf{g_{ij}} \| ) \text{exp}\left[ -\| \mathbf{x} - \mathbf{g_{ij}} \|^2 / 2 \sigma^2 \right] \]        
+        \[ k_h( \| \mathbf{x} - \mathbf{g_{ij}} \| ) = \text{cos}(w \| \mathbf{x} - \mathbf{g_{ij}} \| ) \; \text{exp}\left[ -\| \mathbf{x} - \mathbf{g_{ij}} \|^2 / 2 \sigma^2 \right] \]        
       </h5>
       <h5>
         So, we can create a density function that combines these kernels:
         \[ f_d(V,\mathbf{g_{ij}}) = ( \mathbb{1}_v \star (\alpha k_d + \beta k_h) )(\mathbf{g_{ij}}) \]
         where \( k_d \) and \( k_h \) are the diffusion (heat) and Helmholtz kernels, respectively.
         With this combination, we can pit these two kernels against each other, producing dynamics that are a compromise between their opposing effects.
-        If the diffusion kernel tears down order through homogenization, the Helmholtz kernel builds order through resonance.
       </h5>
       <h5>
-        To see this, let's take a look below at what the behavior looks like for different values of \( \alpha,\beta\).
+        To see this, let's take a look below at what the behavior looks like for different combinations of diffusion and resonance.
       </h5>
       <table>
         <tr>
@@ -273,12 +286,28 @@ table {
             <img src="movies/nomads_diff_and_helm.gif" alt="nomads diff/helm" style="width:90%;" />
             <figure>
               <figcaption class="figure-caption text-center">
-                <b>Evolution for \( \alpha=1,\beta=0.3 \).</b>
+                <b>Mixed diffusion + ripple kernel.</b>
               </figcaption>
             </figure>
           </td>
         </tr>
       </table>
+      <h5>
+        We see pretty clearly that which we just explored in the abstract.
+        When the terrain degrades under the action of a pure diffusive kernel, everything smooths out, and the terrain field \( T(x,y) \) is driven to a very uniform state.
+        This lack of spatial differentiation results "feast or famine" cycles, in which we observe either the formation of lots of villages everywhere, or very few villages anywhere.
+        Diffusion is thus something of an egalitarian operator, driving every corner of the grid to more or less the same global state.
+      </h5>
+      <h5>
+        The Helmholtz ripple kernel is clearly very much the opposite.
+        We see that under its influence, a few tightly clustered "kingdoms" develop and strengthen in power and influence, so much so that a global steady state consisting of one single village cluster emerges.
+        And so, we have the yin-and-yang opposition which we sought.
+        A Gaussian is egalitarian, a ripple is elitist; diffusion favors chaos, Helmholtz favors order.
+      </h5>
+      <h5>
+        The final plot in the group of three above shows a glimpse of the sort of beauty that emerges when you combine these two forces.
+        Kingdoms rise and fall; vagabonds disband and re-consolidate. 
+      </h5>
   </div>
 </div>
 <hr>
@@ -291,7 +320,7 @@ table {
         First: adding some external forcing to \( T(x,y) \) can make things interesting.
         So, we'll randomly perturb \( T(x,y) \) every so often with a Gaussian at a randomly chosen location.
         We'll also add some vortices at fixed locations to swirl things around:
-        \[ T \mapsto T - \mathbf{v} \cdot \frac{dT}{d\mathbf{x}} \Delta t \]
+        \[ T_{\mathbf{g_{ij}}} \mapsto T_{\mathbf{g_{ij}}} - \mathbf{v} \cdot \frac{dT_{\mathbf{g_{ij}}}}{d\mathbf{x}} \Delta t \]
       </h5>
       <h5>
         Here, \( \mathbf{v} = (v_x,v_y) \) is the velocity field imposed by a vortex swirling at a fixed spatial location:
@@ -335,7 +364,7 @@ table {
         Clearly, all agents <em>want</em> to settle into a permanent village, but the very act of doing so depletes the resources on which their village stands, making it less stable over time. 
         This is of course exacerbated by the fact that all agents want the same thing, which leads to overpopulation.
         So you get a global population that is constantly going through cycles: for a stretch, things might seem pretty ordered and static, only to be followed by an equally long period of reshuffling and migration.
-        Nature seems to be playing with these poor nomads, who look like they're always just a couple steps behind it; always chasing the nearest shiny patch of land, only to have to start all over just as soon as they reach it. 
+        Nature seems to be playing with these poor nomads, who look like they're always just a couple steps behind it, always chasing the nearest shiny patch of land, only to have to start all over just as soon as they reach it. 
       </h5>
   </div>
 </div>
