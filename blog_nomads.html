@@ -123,22 +123,21 @@ table {
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-      <h3>Version 1: static terrain</h3>
+      <h3>Version 1: first steps</h3>
       <h5>
-        The dynamics of our model will unfold on a static, structured 2D spatial grid \( G = \lbrace (x_i,y_j) \rbrace \), where \( i = 1 \dots n_x \) and \( j = 1 \dots n_y \).
-        The <em>agents</em> will be described by their location on \(G\): \( A = \lbrace a_i \rbrace \; \text{for} \; i=1 \dots n_a \), where \( a_i \in G \).
-        <em>Villages</em> will also be characterized in this way: \( V = \lbrace v_i \rbrace \; \text{for} \; i=1 \dots n_v \), where \( v_i \in G \).
-        I'll be referring to \(a_i\) and \(v_i\) as both the agents/villages as entities and as their spatial locations interchangeably, so please excuse the slight abuse of notation.
+        The dynamics of our model will unfold on a static, structured 2D spatial grid \( G = \lbrace \mathbf{g_{ij}} \rbrace \), where \( \mathbf{g_{ij}}=(x_i,y_j) \) with \( i = 1 \dots n_x \) and \( j = 1 \dots n_y \).
+        We'll describe <em>agents</em> by their location on \(G\): \( A = \lbrace \mathbf{a_i} \rbrace \; \text{for} \; i=1 \dots n_a \), where \(\mathbf{a_i} \in G\).
+        <em>Villages</em> will also be characterized in this way: \( V = \lbrace \mathbf{v_i} \rbrace \; \text{for} \; i=1 \dots n_v \), where \( \mathbf{v_i} \in G \).
         The <em>terrain quality</em> \( T(x,y) : \mathbb{R}^2 \mapsto \mathbb{R} \) is a spatial field defined on \( G \).
       </h5>
       <h5>
         With those basic definitions out of the way, let's talk about how the agents move about.
-        At any given moment in time, agent \(a_i\) evaluates the quality of their terrain \( T(a_i) \).
-        If \( T(a_i) \ge T^* \), then that agent "settles" to form a village.
-        Algorithmically, this means that we pop the location \( a_i \) off of the set \(A\) and append it to the set \(V\).
-        Otherwise, \( T(a_i) < T^* \), and the agent continues to wander.
-        This wandering is modeled as a random process: the agent randomly chooses one of the 8 grid locations that neighbor \(a_i\), call it \( a_i^* \).
-        If \( T(a_i^*) > T(a_i) \), then the agent moves to this "better" square; otherwise, it stays put with some probability.
+        At any given moment in time, agent \(a_i\) evaluates the quality of their terrain \( T(\mathbf{a_i}) \).
+        If \( T(\mathbf{a_i}) \ge T^* \), then that agent "settles" to form a village.
+        Algorithmically, this means that we pop the location \( \mathbf{a_i} \) off of the set \(A\) and append it to the set \(V\).
+        Otherwise, \( T(\mathbf{a_i}) < T^* \), and the agent continues to wander.
+        This wandering is modeled as a random process: the agent randomly chooses one of the 8 grid locations that neighbor \(\mathbf{a_i}\), call it \( \mathbf{a_i^*} \).
+        If \( T(\mathbf{a_i^*}) > T(\mathbf{a_i}) \), then the agent moves to this "better" square; otherwise, it stays put with some probability.
         If it so happens that the agent stumbles onto a pre-existing village, they will just automatically decide to settle there.
       </h5>
       <h5>
@@ -202,19 +201,19 @@ table {
         The general idea is that if a local area is heavily populated with villages, then the resources should start to deplete and \( T(x,y) \) should decrease.
         We also allow for a resource-depleted area to regenerate over time, at a rate proportional to how depleted it is.
         This gives the following general system:
-        \[ T_{g_i} \mapsto T_{g_i} - c_1 f_d( V , g_i ) + c_2 ( 1 - T_{g_i} ) \]
+        \[ T_{\mathbf{g_{ij}}} \mapsto T_{\mathbf{g_{ij}}} - c_1 f_d( V , \mathbf{g_{ij}} ) + c_2 ( 1 - T_{\mathbf{g_{ij}}} ) \]
       </h5>
       <h5>
-        where \( T_{g_i} \) denotes \(T\) at grid location \(g_i\) and \( f_d(V,g_i) \) is a function that estimates the density of villages at \( g_i \).
+        where \( T_{\mathbf{g_{ij}}} \) denotes \(T\) at grid location \(\mathbf{g_{ij}}\) and \( f_d(V,\mathbf{g_{ij}}) \) is a function that estimates the density of villages at \( \mathbf{g_{ij}} \).
       </h5>
       <h5>
         There are several conceivable choices for the density function.
         One intuitive definition to consider is to average the number of villages in the vicinity of a grid point using a Gaussian weighting.
         This choice introduces natural locality and smoothness to the estimated density field.
         We can write this as:
-        \[ f_d(V,\mathbf{g_i}) = \int_{\mathbf{x}} \mathbb{1}_v(\mathbf{x}) \mathcal{N}_{\sigma}( \| \mathbf{x} - \mathbf{g_i} \| ) d\mathbf{x} \]
+        \[ f_d(V,\mathbf{g_{ij}}) = \int_{\mathbf{x}} \mathbb{1}_v(\mathbf{x}) \mathcal{N}_{\sigma}( \| \mathbf{x} - \mathbf{g_{ij}} \| ) d\mathbf{x} \]
         Notice this is the same as convolution with a kernel:
-        \[ f_d(V,\mathbf{g_i}) = ( \mathbb{1}_v \star k )(\mathbf{g_i}) \]
+        \[ f_d(V,\mathbf{g_{ij}}) = ( \mathbb{1}_v \star k )(\mathbf{g_{ij}}) \]
         where, in this particular case, we've chosen the kernel to be Gaussian, i.e. \( k(\cdot) = \mathcal{N}_{\sigma}( \cdot ) \).
       </h5>
       <h5>
@@ -227,7 +226,7 @@ table {
       <h5>
         To answer that question, it helps to introduce a bit of math, and connect kernels to the theory of partial differential equations (PDEs).
         It turns out that the Gaussian kernel is formally the <em>Green's function</em> of the heat equation:
-        \[ u_t = \alpha \nabla^2 u \]
+        \[ u_t = \nu \nabla^2 u \]
         A consequence of this is that the heat equation can be solved, given any initial condition, by convolution with a Gaussian kernel.
         What this means for us is that there is a deep connection between the Gaussian kernel and the behavior of the heat equation.
         We know that the heat equation produces very smooth solutions; sharp features are dulled down and everything sort of regresses to a global, boring average.
@@ -240,11 +239,11 @@ table {
         \[ (\nabla^2 - w^2)u = \delta(\mathbf{x}) \]
         Instead of smoothing, this equation tends to produce sharply defined, resonant spatial wavelengths.
         Its Green's function can be approximated by cosine-ripple functions that look like this:
-        \[ k_h( \| \mathbf{x} - \mathbf{g_i} \| ) = \text{cos}(w \| \mathbf{x} - \mathbf{g_i} \| ) \text{exp}\left[ -\| \mathbf{x} - \mathbf{g_i} \|^2 / (2 \sigma^2)\right] \]        
+        \[ k_h( \| \mathbf{x} - \mathbf{g_{ij}} \| ) = \text{cos}(w \| \mathbf{x} - \mathbf{g_{ij}} \| ) \text{exp}\left[ -\| \mathbf{x} - \mathbf{g_{ij}} \|^2 / 2 \sigma^2 \right] \]        
       </h5>
       <h5>
         So, we can create a density function that combines these kernels:
-        \[ f_d(V,\mathbf{g_i}) = ( \mathbb{1}_v \star (\alpha k_d + \beta k_h) )(\mathbf{g_i}) \]
+        \[ f_d(V,\mathbf{g_{ij}}) = ( \mathbb{1}_v \star (\alpha k_d + \beta k_h) )(\mathbf{g_{ij}}) \]
         where \( k_d \) and \( k_h \) are the diffusion (heat) and Helmholtz kernels, respectively.
         With this combination, we can pit these two kernels against each other, producing dynamics that are a compromise between their opposing effects.
         If the diffusion kernel tears down order through homogenization, the Helmholtz kernel builds order through resonance.
@@ -254,31 +253,24 @@ table {
       </h5>
       <table>
         <tr>
-          <td style="text-align:center; width:40%">
+          <td style="text-align:center; width:30%">
             <img src="movies/nomads_diff.gif" alt="nomads diff" style="width:90%;" />
             <figure>
               <figcaption class="figure-caption text-center">
-                <b>Evolution under a pure diffusion kernel.</b>
+                <b>Pure diffusion kernel.</b>
               </figcaption>
             </figure>
           </td>
-          <td style="text-align:center; width:40%">
+          <td style="text-align:center; width:30%">
             <img src="movies/nomads_helm.gif" alt="nomads helm" style="width:90%;" />
             <figure>
               <figcaption class="figure-caption text-center">
-                <b>Evolution under a pure cosine-ripple kernel.</b>
+                <b>Pure cosine-ripple kernel.</b>
               </figcaption>
             </figure>
           </td>
-        </tr>
-      </table>
-      <h5>
-        Now, let's see what happens when we combine the two and have them fight it out for order/chaos:
-      </h5>
-      <table>
-        <tr>
-          <td style="text-align:center; width:50%">
-            <img src="movies/nomads_diff_and_helm.gif" alt="nomads diff/helm" style="width:40%;" />
+          <td style="text-align:center; width:30%">
+            <img src="movies/nomads_diff_and_helm.gif" alt="nomads diff/helm" style="width:90%;" />
             <figure>
               <figcaption class="figure-caption text-center">
                 <b>Evolution for \( \alpha=1,\beta=0.3 \).</b>
@@ -291,6 +283,43 @@ table {
 </div>
 <hr>
 
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+      <h3>Final version</h3>
+      <h5>
+        We'll add a couple other cosmetic effects to this version, but the basic core will be driven by the competition between diffusion and resonance that we saw previously.
+        First: adding some external forcing to \( T(x,y) \) can make things interesting.
+        So, we'll randomly perturb \( T(x,y) \) every so often with a Gaussian at a randomly chosen location.
+        We'll also add some vortices at fixed locations to swirl things around:
+        \[ T \mapsto T - \mathbf{v} \cdot \frac{dT}{d\mathbf{x}} \Delta t \]
+      </h5>
+      <h5>
+        Here, \( \mathbf{v} = (v_x,v_y) \) is the velocity field imposed by a vortex swirling at a fixed spatial location:
+        \[ v_x = -\frac{ r_y }{ r } \; , \; v_y = \frac{ r_x }{ r }  \]
+        where \( r = \| \mathbf{x} - \mathbf{x_0} \| \) is the distance to the vortex center.
+      </h5>
+      <h5>
+        Other than that, we'll introduce another mode to simulate village collapse from local overpopulation.
+        This will work in a similar fashion to how we modeled terrain degradation, by convolving \( T(x,y) \) with a Gaussian.
+        The difference is that here, we directly collapse villages based on local density:
+        \[ v_{\mathbf{g_{ij}}} \mapsto \emptyset \; \text{if} \; \xi < \frac{c_1}{ 1 + \text{exp}[ -(f_d(\mathbf{g_{ij}}) - c_2) / c_3 ] }  \]
+        Where \( \xi \sim \mathcal{U}[0,1] \) is just a uniform random number, and \( f_d(\cdot) \) is computed with a (normalized) Gaussian kernel, so that it represents local village density.
+      </h5>
+      <table>
+        <tr>
+          <td style="text-align:center; width:50%">
+            <img src="movies/nomads_200.gif" alt="nomads 2" style="width:40%;" />
+            <figure>
+              <figcaption class="figure-caption text-center">
+                <b>Final version.</b>
+              </figcaption>
+            </figure>
+          </td>
+        </tr>
+      </table>
+  </div>
+</div>
+<hr>
 
 
 
